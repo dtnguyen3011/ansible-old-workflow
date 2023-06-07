@@ -1,0 +1,49 @@
+---
+- name: "UPDATE expired Password"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+  tasks:
+    - name: "Change system user password on local computer"
+      debug:
+        msg: "PLEASE do it manual on any agent computer"
+    - name: "Setup on Jenkins system configuration"
+      debug:
+        msg: "PLEASE do it manual on Jmaas (LUCXPASSWORD and LUCXJIRA) in Main/JET/DEV"
+    - name: "Change WAM/Portal password"
+      debug:
+        msg: "PLEASE do it manual on any agent computer via https://rb-im.bosch.com/sim/user/changePassword.jsp"
+
+    - name: "Update machines - biaas_win10 (service logon + _netrc file)"
+      include_tasks: update_tasks/biaas_win10.yml
+      vars:
+        service_name: BIaaSNG_Jenkins
+      when: group_name == "win_ssh_biaas_agent"
+
+    - name: "Update machines - biaas_osd (smbcredentials)"
+      include_tasks: update_tasks/osd.yml
+      when: group_name == "linux_biaas_agent"
+
+    - name: "Setup service logon for machines - static_winserver (service logon)"
+      include_tasks: update_tasks/static_winserver.yml
+      vars:
+        service_name: Jenkins_JNLP_worker
+        service_name_jet: Jenkins_JET_JNLP_worker
+      when: group_name == "win_ssh_server_static_agent"
+
+    - name: "Update machines - static_osd (smbcredentials)"
+      include_tasks: update_tasks/osd.yml
+      when: group_name == "linux_static_agent"
+
+    - name: "Setup service logon for machines - vmc_winserver (service logon)"
+      include_tasks: update_tasks/static_winserver.yml
+      # include_tasks: update_tasks/vmc_winserver.yml
+      vars:
+        service_name: Jenkins_JNLP_worker
+        service_name_jet: Jenkins_JET_JNLP_worker
+        service_name_dev: Jenkins_DEV_JNLP_worker
+      when: group_name == "win_ssh_server_vmc_agent"
+
+    # - name: "Update machines - ecu_win10 (Swarm + SmokeTest + AutoLogon)"
+    #   include_tasks: update_tasks/ecu_win10.yml
+    #   when: group_name == "win_ssh_ecu_agent"
+

@@ -1,0 +1,32 @@
+---
+## this is the playbook for radar gen 5 template node and window node.
+## Use for update action
+#
+# ansible-playbook playbooks/Radar5/Radar5_win_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=rng-zeng09w002.rng.de.bosch.com"
+# ansible-playbook playbooks/Radar5/Radar5_win_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_biaas_agent"
+#
+##
+
+- name: "UPDATE new user on BIAAS nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+  vars:
+    service_name: BIaaSNG_Jenkins
+
+  tasks:
+    - name: "Change owner of jenkins_home"
+      win_shell: "takeown /f {{ jenkins_home }} /r /d y"
+
+    - name: "Add {{ sysuser.name }} allow rights"
+      win_acl:
+        path: "{{ jenkins_home }}"
+        user: "{{ sysuser.domain }}\\{{ sysuser.name }}"
+        rights: FullControl
+        type: allow
+        state: present
+      ignore_errors: true
+
+    - include_tasks: BiaaS_template_setup/win10/add_ssh_key.yml
+    - include_tasks: BiaaS_template_setup/win10/enable_config.yml
+    - include_tasks: BiaaS_template_setup/win10/clone_repo.yml
+    - include_tasks: update_tasks/biaas_win10.yml

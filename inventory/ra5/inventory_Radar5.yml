@@ -1,0 +1,202 @@
+ra5:
+  children:
+    win:
+      children:
+        win_winrm: # machines using WinRM for connection (Windows Server)
+
+        win_ssh: # machines using ssh for connection (Windows 10)
+          children:
+            win_ssh_server_static_agent: # ABTs use same jenkins_home
+              hosts:
+                abtsr050.de.bosch.com:
+                  jenkins_env: "jet,main"
+                  jet_status: "off"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent qac_delta"
+                  jenkins_executors: 11
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: VAG Static Code Analysis server
+                abtsr053.de.bosch.com:
+                  jenkins_env: "jet,main"
+                  jet_status: "off"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent qac_delta qac_server"
+                  jenkins_executors: 8
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: VAG Static Code Analysis server
+                abtsr054.de.bosch.com:
+                  jenkins_env: "jet,main"
+                  jet_status: "off"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent qac_delta qac_server"
+                  jenkins_executors: 8
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: VAG Static Code Analysis server
+                abtsr055.de.bosch.com:
+                  jenkins_env: "jet,main"
+                  jet_status: "off"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent 2performance coverity qac_delta qac_server"
+                  jenkins_executors: 6
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: VAG Static Code Analysis server
+            win_ssh_server_vmc_agent:
+              hosts:
+                rngvmc0147.de.bosch.com:
+                  jenkins_env: "jet,main"
+                  jenkins_home: "C:\\JT"
+                  jenkins_home_jet: "C:\\JT_JET"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent 1r1v_pr_check pr_check lucx_agent lightweight"
+                  jenkins_executors: 32
+                  jenkins_executors_jet: 16
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: Dedicated lucx_agent machine
+                # si0vmc3992.de.bosch.com:
+                #   jenkins_home: "D:\\JT"
+                #   jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent"
+                #   jenkins_executors: 1
+                #   jenkins_description: TOP-94 server
+                si0vmc4322.de.bosch.com:
+                  jenkins_env: "jet,main"
+                  jet_status: "off"
+                  jenkins_home: "D:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] | lower }} static_agent"
+                  jenkins_executors: 4
+                  jenkins_description: VW37-MOPF QAC server
+                rngvmc0200.de.bosch.com:
+                  jenkins_env: "jet,main"
+                  jet_status: "off"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent qac_delta"
+                  jenkins_executors: 8
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: VAG QAC delta check server
+                rngvmc0324.de.bosch.com:
+                  jenkins_env: "main,jet,dev"
+                  jenkins_home: "C:\\JT"
+                  jenkins_home_jet: "C:\\JT_JET"
+                  jenkins_home_dev: "C:\\JT_DEV"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} static_agent 1r1v_pr_check pr_check lucx_agent lightweight"
+                  jenkins_executors: 32
+                  jenkins_executors_jet: 16
+                  jenkins_executors_dev: 8
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: Dedicated lucx_agent machine
+            win_ssh_biaas_agent:
+              hosts:
+                rng-zeng09w002.rng.de.bosch.com:
+                  machine_type: "Biaas"
+                rng-zeng09w003.rng.de.bosch.com:
+                  machine_type: "Biaas"
+                rng-zeng11w003.rng.de.bosch.com:
+                  machine_type: "Biaas"
+                rng-zeng11w005.rng.de.bosch.com:
+                  machine_type: "Biaas"
+                  jenkins_home: "C:\\JT"
+            win_ssh_ecu_agent:
+              hosts:
+                lr-c-0000y.lr.de.bosch.com:
+                  jenkins_env: "main"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} swarm ecu-test_mrr"
+                  jenkins_executors: 1
+                  jenkins_connector: "swarm"
+                  jenkins_description: Connected and managed by ansible
+                lr-c-0003g.lr.de.bosch.com:
+                  jenkins_env: "main"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} swarm ecu-test_lrr_2 pr_check"
+                  jenkins_executors: 6
+                  jenkins_connector: "swarm"
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: Connected and managed by ansible
+                lr-c-0005v.lr.de.bosch.com:
+                  jenkins_env: "main"
+                  jenkins_home: "D:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} swarm ecu-test ecu-test_VW lucx_agent lightweight pr_check 1r1v_pr_check"
+                  jenkins_executors: 8
+                  jenkins_connector: "swarm"
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: Connected and managed by ansible
+                lr-z7389.lr.de.bosch.com:
+                  jenkins_env: "main"
+                  jenkins_home: "C:\\JT"
+                  jenkins_labels: "{{ ansible_nodename.split('.')[0] }} swarm ecu-test_DAI pr_check"
+                  jenkins_executors: 1
+                  jenkins_connector: "swarm"
+                  win_telegraf_action_flag: "install"
+                  jenkins_description: Connected and managed by ansible
+                # lr-c-000ah.lr.de.bosch.com:
+                #   jenkins_home: "C:\\JT"
+                #   jenkins_labels: "{{ ansible_nodename.split('.')[0] }} swarm ecu-test_lrr"
+                #   jenkins_executors: 1
+                #   jenkins_connector: "swarm"
+
+        win_jenkins:
+          children:
+            win_ssh_biaas_agent:
+            win_jenkins_agent: # combining both windows connection types in one windows group by referencing the previously defined groups
+              children:
+                win_ssh_server_vmc_agent:
+                win_ssh_server_static_agent:
+                win_ssh_ecu_agent:
+
+    linux:
+      children:
+        linux_biaas_agent:
+          hosts:
+            rng-zeng09l002.rng.de.bosch.com:
+              machine_type: "Biaas"
+            rng-zeng09l003.rng.de.bosch.com:
+              machine_type: "Biaas"
+            rng-zeng11l003.rng.de.bosch.com:
+              machine_type: "Biaas"
+        linux_static_agent:
+          hosts:
+            lr-z6684.lr.de.bosch.com:
+              jenkins_env: "dev,jet,main"
+              jenkins_home: "/var/jenkins"
+              jenkins_home_jet: "/var/jenkins_jet"
+              jenkins_home_dev: "/var/jenkins_dev"
+              jenkins_labels: "{{ ansible_nodename.split('.')[0] }} buildslaves_{{ ansible_nodename.split('.')[0] }} static_agent lightweight linux"
+              jenkins_executors: 32
+              jenkins_node_name: "Linux_LR-Z6684"
+              jenkins_description: 1R1V OSD6 Workstation LR-Z6684.lr.de.bosch.com
+            abts55144.de.bosch.com:
+              jenkins_env: "jet,main"
+              jenkins_home: "/var/jenkins"
+              jenkins_home_jet: "/var/jenkins_jet"
+              jenkins_labels: "{{ ansible_nodename.split('.')[0] }} buildslaves_{{ ansible_nodename.split('.')[0] }} static_agent linux"
+              jenkins_executors: 16
+              jenkins_executors_jet: 8
+              jenkins_node_name: "Linux_abts55144"
+              jenkins_description: 1R1V Centos 7.9 server abts55144.de.bosch.com - Server for monitoring
+
+        linux_jenkins: #ssh, authorized_keys for ssh with key-based authentication required
+          children:
+            linux_jenkins_agent:
+              children:
+                linux_static_agent:
+                linux_biaas_agent:
+
+    jenkins:
+      children:
+        jenkins_agent:
+          children:
+            win_jenkins:
+            linux_jenkins:
+
+    vmc_agent:
+      children:
+        win_ssh_server_vmc_agent:
+    ecu_agent:
+      children:
+        win_ssh_ecu_agent:
+    static_agent:
+      children:
+        win_ssh_server_static_agent:
+        linux_static_agent:
+    win_server:
+      children:
+        win_ssh_server_vmc_agent:
+        win_ssh_server_static_agent:

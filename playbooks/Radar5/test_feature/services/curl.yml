@@ -1,0 +1,11 @@
+---
+- name: "Get CURL path in ENV"
+  win_command: "where curl"
+  register: env_path
+- set_fact:
+    curl_path: "{{ env_path.stdout_lines[0] }}"
+- name: "Get version"
+  win_command: "\"{{ curl_path }}\" --version"
+  register: curl_version
+- debug:
+    msg: "curl_path is {{ curl_path }} and version is {{ curl_version.stdout }}"

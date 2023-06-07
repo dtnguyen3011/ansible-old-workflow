@@ -1,0 +1,18 @@
+## Refer to https://inside-docupedia.bosch.com/confluence/x/kkjqi
+## ansible-playbook playbooks/Radar5/test_feature/enable_remote_linux.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=linux_biaas_agent"
+---
+- name: "Enable remote permission on linux"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+  tasks:
+    - name: "Add ssh permission"
+      lineinfile:
+        path: /etc/opt/osd-ssh-package/allowed_users
+        line: "{{ sysuser_rac.name }}"
+      become: true
+    - name: "Change mode for ansible folder"
+      file:
+        path: /tmp/.ansible-tmp/
+        recurse: yes
+        mode: '0777'
+      become: true

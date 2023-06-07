@@ -1,0 +1,70 @@
+- name: Logon to CyberArk Vault using PAS Web Services SDK
+  delegate_to: localhost
+  cyberark_authentication:
+    api_base_url: "{{ rbpam_url }}"
+    validate_certs: false
+    username: "{{ rbpam_username }}"
+    password: "{{ rbpam_password }}"
+
+- name: Get List of available secrets
+  no_log: true
+  check_mode: false
+  delegate_to: localhost
+  uri:
+    url: "{{ rbpam_url }}/PasswordVault/api/Accounts"
+    method: GET
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+      Authorization: "{{ cyberark_session.token }}"
+  register: available_secrets
+
+- name: Set facts for account_id
+  no_log: true
+  check_mode: false
+  delegate_to: localhost
+  set_fact:
+    account_id: "{{ ( account_id | default([])) + available_secrets.json.value | json_query(jmesquery) }}"
+  vars:
+    jmesquery: "[?safeName=='{{ safe_name }}' && name== '{{ item }}'].{name: name, id: id, username: userName}"
+  with_items: "{{ secret_names }}"
+
+- name: Check secrets exist in RB-PAM safe
+  fail:
+    msg: >
+      "Secret '{{ item }}' not found in RB-PAM safe or user
+      {{ rbpam_username }} has no permissions to access it"
+  when: account_id|selectattr("name", "equalto", item)|list|length == 0
+  with_items: "{{ secret_names }}"
+
+- name: Get CyberArk passwords
+  no_log: true
+  check_mode: false
+  delegate_to: localhost
+  uri:
+    url: "{{ rbpam_url }}/PasswordVault/api/Accounts/{{ item.id }}/Password/Retrieve"
+    method: POST
+    validate_certs: false
+    headers:
+      Content-Type: "application/json"
+      Authorization: "{{ cyberark_session.token }}"
+    body_format: json
+    body: { "Reason":"Access requested for project {{ project_name }}, safe - {{ safe_name }}" }
+    return_content: "yes"
+  register: secrets
+  loop: "{{ account_id }}"
+
+- name: Set facts for secrets
+  no_log: true
+  check_mode: false
+  delegate_to: localhost
+  set_fact: { '{{ secret_names[item.item.name][0] }}': "{{ item.item.username }}",
+              '{{ secret_names[item.item.name][1] }}': "{{ item.content | regex_replace('^\"|\"$', '') }}" }
+  loop: "{{ secrets.results }}"
+
+- name: Logoff from CyberArk Vault
+  no_log: true
+  delegate_to: localhost
+  cyberark_authentication:
+    state: absent
+    cyberark_session: "{{ cyberark_session }}"

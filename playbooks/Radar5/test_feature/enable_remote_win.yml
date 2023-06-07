@@ -1,0 +1,33 @@
+## Refer to https://inside-docupedia.bosch.com/confluence/x/kkjqi
+---
+- name: "Enable remote permission on window"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+  vars:
+    admin_group_name: "Administrators"
+    remote_group_name: "Remote Desktop Users"
+    disable_remote_group_name: "DisableRDP"
+  tasks:
+    - name: "Add to {{ item }}"
+      win_group_membership:
+        name: "{{ item }}"
+        members: "{{ sysuser_rac.domain }}\\{{ sysuser_rac.name }}"
+        state: present
+      with_items:
+        - "{{ admin_group_name }}"
+        - "{{ remote_group_name }}"
+    - name: "Remove from {{ disable_remote_group_name }}"
+      win_group_membership:
+        name: "{{ disable_remote_group_name }}"
+        members: "{{ sysuser_rac.domain }}\\{{ sysuser_rac.name }}"
+        state: absent
+
+    - name: "Result"
+      win_shell: "Get-LocalGroupMember -Group '{{ item }}'"
+      with_items:
+        - "{{ admin_group_name }}"
+        - "{{ remote_group_name }}"
+        - "{{ disable_remote_group_name }}"
+      register: info
+    - debug:
+        var: info

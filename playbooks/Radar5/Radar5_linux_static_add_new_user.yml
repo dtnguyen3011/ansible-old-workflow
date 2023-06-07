@@ -1,0 +1,71 @@
+
+###
+## ansible-playbook playbooks/Radar5/Radar5_linux_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=linux_static_agent"
+###
+---
+- name: Handle linux Jenkins nodes
+  hosts: "{{ group_name }}"
+  pre_tasks:
+    - name: "{{ ansible_hostname }} - Define vars based on jenkins_env"
+      set_fact:
+        jenkins_env_list: "{{ jenkins_env_list | default([]) + [item] }}"
+      loop:
+        - { 'Name': 'Jenkins',      'Jhome': "{{ jenkins_home }}",      'JInfo': "{{ jenkins_master }}" }
+        - { 'Name': 'Jenkins_JET',  'Jhome': "{{ jenkins_home }}_jet",  'JInfo': "{{ jenkins_jet }}" }
+        - { 'Name': 'Jenkins_DEV',  'Jhome': "{{ jenkins_home }}_dev",  'JInfo': "{{ jenkins_dev }}" }
+      when: >-
+        (item.Name == "Jenkins" and "main" in jenkins_env) or
+        (item.Name == "Jenkins_JET" and "jet" in jenkins_env) or
+        (item.Name == "Jenkins_DEV" and "dev" in jenkins_env)
+
+    - name: Set jenkins executors
+      set_fact:
+        jenkins_executors: 1
+      when: jenkins_executors is not defined
+    - name: Set jenkins labels
+      set_fact:
+        jenkins_labels: linux {{ ansible_nodename.split('.')[0] }}
+      when: jenkins_labels is not defined
+    - name: Set jenkins name
+      set_fact:
+        ansible_nodename: "{{ jenkins_name }}"
+      when: jenkins_name is defined
+
+  tasks:
+    - block:
+        - name: "Add {{ sysuser.name }} as owner/group of jenkins_home"
+          shell: "chown {{ sysuser.name }}:{{ sysuser.name }} {{ item.Jhome }} -R"
+          with_items:
+            - "{{ jenkins_env_list }}"
+          become: yes
+      rescue:
+        - name: "Add {{ sysuser.name }} as owner of jenkins_home"
+          shell: "chown {{ sysuser.name }} {{ item.Jhome }} -R"
+          with_items:
+            - "{{ jenkins_env_list }}"
+          become: yes
+
+    - include_tasks: BiaaS_template_setup/linux/add_ssh_key.yml
+    - include_tasks: BiaaS_template_setup/linux/enable_config.yml
+    - include_tasks: BiaaS_template_setup/linux/install_tool.yml
+
+    - name: "{{ ansible_hostname }} - RUNNING on roles"
+      include_role:
+        name: had.jenkins-master-add-worker
+      with_items:
+        - "{{ jenkins_env_list }}"
+      vars:
+        jenkins_master: "{{ item.JInfo }}"
+        jenkins_home: "{{ item.Jhome }}"
+        jenkins_worker:
+          description: Connected and managed by ansible
+          executors: "{{ jenkins_executors }}"
+          labels: "{{ jenkins_labels }}"
+        ansible_fqdn: "{{ jenkins_node_name }}"
+        java_force_install: false
+
+  post_tasks:
+  - name: "{{ ansible_hostname }} - Restart"
+    reboot:
+      reboot_timeout: 600
+    become: yes

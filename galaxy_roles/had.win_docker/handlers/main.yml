@@ -1,0 +1,7 @@
+# Because win_reboot does not recognize that the virtual machine is already up, we set the timeouts way lower & ignore_errors: yes
+# When Containers and/or Hyper-V had to be installed, we have to reboot the Machine to have them take effect (mostly this step will fail, but it should work nevertheless)
+- name: Reboot machine
+  win_reboot:
+    reboot_timeout_sec: 60
+    connect_timeout: 60
+  ignore_errors: true

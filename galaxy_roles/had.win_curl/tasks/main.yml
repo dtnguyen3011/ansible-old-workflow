@@ -1,0 +1,44 @@
+- name: "Check curl.exe is installed at win_curl_install_dir or not"
+  win_stat:
+    path: "{{ win_curl_install_dir }}\\bin\\curl.exe"
+  register: stat_file
+  when: not win_curl_force_install
+
+- name: "Pre-check"
+  fail:
+    msg: "curl.exe already installed at {{ win_curl_install_dir }}. No need to run"
+  when: not win_curl_force_install and stat_file.stat.exists
+
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ var_curl_temp_dir }}"
+
+- name: "Download curl package"
+  win_get_url:
+    url: "{{ var_curl_package_location }}/curl-{{ win_curl_package_version }}.zip"
+    dest: "{{ var_curl_temp_dir }}\\curl.zip"
+  retries: 2
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Init install dir"
+  win_file:
+    state: absent
+    path: "{{ win_curl_install_dir }}"
+
+- name: "Unpack curl"
+  win_unzip:
+    src: "{{ var_curl_temp_dir }}\\curl.zip"
+    dest: "{{ win_curl_install_dir }}"
+
+- name: "Add curl to PATH"
+  win_path:
+    elements:
+      - "{{ win_curl_install_dir }}\\bin"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ var_curl_temp_dir }}"

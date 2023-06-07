@@ -1,0 +1,15 @@
+---
+sysuser:
+  name: USERNAME_HERE
+  domain: de
+  pass: "{{ vault.USERNAME_HERE.pass }}"
+  jenkins_api_key: "{{ vault.USERNAME_HERE.jenkins_api_key }}"
+  ssh_key: "{{ vault.USERNAME_HERE.ssh_key }}"
+  ssh_dir: "~/.ssh_USERNAME_HERE"
+  ssh_pub_key: "{{ lookup('file', '~/.ssh_USERNAME_HERE/jenkinsAgent_rsa.pub') }}"
+
+ansible_user: "{{ sysuser.name }}"
+#become_password: "{{ sysuser.pass }}"
+
+artifactory_user: "{{ sysuser.name }}"
+artifactory_user_password: "{{ sysuser.pass }}"

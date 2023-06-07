@@ -1,0 +1,8 @@
+
+Host abthadrepo03.de.bosch.com
+    User {{ domain | lower }}\{{ nt_user }}
+    HostName abthadrepo03.de.bosch.com
+
+Host {{ nt_user }}@socialcoding
+	Host sourcecode.socialcoding.bosch.com
+	User {{ nt_user }}

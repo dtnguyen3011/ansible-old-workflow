@@ -1,0 +1,19 @@
+- name: "Detect notepad++ is installed or not (64bit)"
+  win_shell: Get-ItemProperty 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayName -like 'NotePad++*'} | Select-Object -ExpandProperty UninstallString
+  register: remove_cmd_64
+  ignore_errors: true
+  when: not win_notepad_force_install
+
+- name: "Detect notepad++ is installed or not (32bit)"
+  win_shell: Get-ItemProperty 'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayName -like 'NotePad++*'} | Select-Object -ExpandProperty UninstallString
+  register: remove_cmd_32
+  ignore_errors: true
+  when: not win_notepad_force_install and (remove_cmd_64.stdout | length == 0)
+
+- name: "Pre-check"
+  debug:
+    msg: "Notepad++ already installed. No need to run"
+  when: not win_notepad_force_install and ((remove_cmd_64.stdout | length > 0) or (remove_cmd_32.stdout | length > 0))
+
+- include_tasks: install.yml
+  when: win_notepad_force_install or ((remove_cmd_64.stdout | length == 0) and (remove_cmd_32.stdout | length == 0))

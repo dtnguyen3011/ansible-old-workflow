@@ -1,0 +1,63 @@
+# Install Docker
+- name: "Check if docker is installed"
+  command: which dockerd
+  register: which_dockerd
+  changed_when: false
+  ignore_errors: true
+  check_mode: false
+
+- name: "Install Docker"
+  include_tasks: install.yml
+  when: upgrade_docker or which_dockerd.failed
+
+# Configure Docker
+- name: "Ensure config folder is present"
+  become: true
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: Adding existing user '{{ docker_user if docker_user is defined else ansible_user }}' to group docker
+  become: true
+  user:
+    name: '{{ docker_user if docker_user is defined else ansible_user }}'
+    groups: docker
+    append: true
+
+- name: "Apply default daemon config"
+  set_fact:
+    docker_json: "{{ default_docker_config | combine(docker_config | default({})) }}"
+
+- name: "Ensure daemon config file is present"
+  become: true
+  template:
+    src: daemon.j2.json
+    dest: /etc/docker/daemon.json
+  notify:
+    - restart docker
+
+- name: "Create docker daemon directory"
+  become: true
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+  when: docker_http_proxy or docker_https_proxy
+
+- name: "Configure docker daemon proxy"
+  become: true
+  template:
+    src: proxy.j2.conf
+    dest: /etc/systemd/system/docker.service.d/proxy.conf
+  when: docker_http_proxy or docker_https_proxy
+  notify:
+    - reload unit
+    - restart docker
+
+- meta: flush_handlers
+
+- name: "Ensure starts on system boot"
+  become: true
+  service:
+    name: docker
+    enabled: true
+    state: started

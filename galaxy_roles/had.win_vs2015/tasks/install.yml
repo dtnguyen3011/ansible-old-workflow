@@ -1,0 +1,74 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ vs2015_temp_dir }}"
+
+- name: "Unmount ISO if existed before"
+  win_disk_image:
+    image_path: "{{ vs2015_temp_dir }}\\vs2015.iso"
+    state: absent
+  ignore_errors: true
+
+- name: "Download VS2015 iso image"
+  win_shell: "start-bitstransfer -source {{ vs2015_installer_location }} -destination {{ vs2015_temp_dir }}\\vs2015.iso"
+  become: true
+  vars:
+    ansible_become: true
+    ansible_become_method: runas
+    ansible_become_user: SYSTEM
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Mount ISO"
+  win_disk_image:
+    image_path: "{{ vs2015_temp_dir }}\\vs2015.iso"
+    state: present
+  register: disk_image_out
+
+- name: "Install Visual Studio Professional With Updates 2015"
+  win_package:
+    path: "{{ disk_image_out.mount_paths[0] }}vs_professional.exe"
+    product_id: "{{ win_vs2015_pid }}"
+    state: present
+    arguments:
+      - /NoRestart
+      - /passive
+      - full
+  register: install
+  ignore_errors: true
+
+- name: "Extract ISO if Installation is restricted by policies"
+  win_copy:
+    remote_src: true
+    src: "{{ disk_image_out.mount_paths[0] }}"
+    dest: "{{ vs2015_temp_dir }}\\vs2015\\"
+  when: install is failed
+
+- name: "Retry Installation VS2015"
+  win_package:
+    path: "{{ vs2015_temp_dir }}\\vs2015\\vs_professional.exe"
+    product_id: "{{ win_vs2015_pid }}"
+    state: present
+    arguments:
+      - /NoRestart
+      - /passive
+      - full
+  when: install is failed
+
+- name: "Add VC140_HOME variable"
+  win_environment:
+    name: VC140_HOME
+    level: machine
+    value: "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0"
+
+- name: "Unmount ISO"
+  win_disk_image:
+    image_path: "{{ vs2015_temp_dir }}\\vs2015.iso"
+    state: absent
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ vs2015_temp_dir }}"

@@ -1,0 +1,51 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ tcc_temp_dir }}"
+
+- name: "Download tcc package"
+  win_get_url:
+    url: "{{ tcc_package_location }}"
+    dest: "{{ tcc_temp_dir }}\\TCC.zip"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack tcc"
+  win_unzip:
+    src: "{{ tcc_temp_dir }}\\TCC.zip"
+    dest: "C:\\"
+    creates: "{{ tcc_install_dir }}"
+
+- name: "Add tcc to PATH"
+  win_path:
+    elements:
+      - "{{ tcc_install_dir }}"
+
+- name: "Add optional tcc tools to PATH"
+  win_path:
+    elements: "{{ tcc_additional_path_tools }}"
+  when: tcc_additional_path_tools is defined
+
+- name: "Add ARMLMD_LICENSE_FILE variable"
+  win_environment:
+    name: ARMLMD_LICENSE_FILE
+    level: machine
+    value: "8224@rb-lic-armlmd-ccda-video.de.bosch.com"
+
+- name: "Add TCC_DIR variable"
+  win_environment:
+    name: TCC_DIR
+    level: machine
+    value: "{{ tcc_install_dir }}"
+
+- name: Copy itolink.txt file to enable TCC to work without ism
+  win_copy:
+    src: itolink.txt
+    dest: "C:\\ism\\profiler\\local\\update\\"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ tcc_temp_dir }}"

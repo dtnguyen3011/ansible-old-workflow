@@ -1,0 +1,9 @@
+- name: "Stop and Remove telegraf service"
+  win_service:
+    name: "{{ win_telegraf_service_name }}"
+    state: absent
+
+- name: "Cleanup telegraf folder"
+  win_file:
+    path: "{{ win_telegraf_dir }}"
+    state: absent

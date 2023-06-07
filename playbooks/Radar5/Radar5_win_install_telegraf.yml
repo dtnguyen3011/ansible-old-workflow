@@ -1,0 +1,11 @@
+---
+## this is the playbook for radar gen 5 win 10 node
+## Use for install action
+## HOW TO RUN : ansible-playbook playbooks/Radar5/Radar5_win_install_telegraf.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_ecu_agent"
+## OR : ansible-playbook playbooks/Radar5/Radar5_win_install_telegraf.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win win_telegraf_action_flag=check"
+
+- name: "install roles on nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+  roles:
+    - { role: had.win_telegraf, tags: ["win_telegraf","init"]}

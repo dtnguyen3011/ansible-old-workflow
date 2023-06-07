@@ -1,0 +1,11 @@
+---
+- name: "Restart WINDOWS nodes"
+  hosts: nrcs_win
+  gather_facts: false
+
+  tasks:
+    - name: "Deactivate bitlocker and restart"
+      win_shell: "{{ item }}"
+      with_items:
+        - Suspend-BitLocker -MountPoint $Env:SystemDrive -RebootCount 1
+        - Restart-Computer -Force

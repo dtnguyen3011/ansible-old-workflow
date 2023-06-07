@@ -1,0 +1,4 @@
+# Delete folder or this file
+
+# Place in templates your template-files that will be filled with variables.
+# Don't confuse this with defaults for variables.

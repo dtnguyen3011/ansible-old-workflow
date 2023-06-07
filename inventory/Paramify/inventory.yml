@@ -1,0 +1,36 @@
+paramify:
+  children:
+    linux:
+      children:
+        # linux cServers require some special rbadmin_app1 user for which you can get the credentials using rb-pam
+        # on windows cServers you can use the system user with admin access which was chosen when ordering the machine
+        linux_cserver:
+          children:
+            # add new linux c-servers to the linux_cserver_jenkins_bootstrap group for an initial setup 
+            # the initial setup uses the rb-pam proxy to setup key-based auth for the  rbadmin_app1 user
+            # Afterwards the machine(s) are moved to the correct group and use a ssh-key for connection instead of the proxy
+            linux_cserver_jenkins_bootstrap:
+              hosts:
+              #  SI0VMC3972.de.bosch.com:
+            linux_cserver_jenkins_agent_prod:
+              hosts:
+                SI0VMC3972.de.bosch.com:
+            linux_cserver_jenkins_agent_test:
+              hosts:
+
+        # combining jenkins agents in single group by referencing previously defined groups
+        linux_jenkins:
+          children:
+            linux_jenkins_prod:
+              children:
+                linux_jenkins_agent_prod:
+                linux_cserver_jenkins_agent_prod:
+            linux_jenkins_test:
+              children:
+                linux_jenkins_agent_test:
+                linux_cserver_jenkins_agent_test:
+
+    jenkins:
+      children:
+        linux_jenkins:
+        win_jenkins:

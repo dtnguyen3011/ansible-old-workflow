@@ -1,0 +1,29 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ var_perl_temp_dir }}"
+
+- name: "Download perl package"
+  win_get_url:
+    url: "{{ var_perl_package_location }}{{ var_perl_package_name }}.zip"
+    dest: "{{ var_perl_temp_dir }}"
+  retries: 2
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack zip file"
+  win_unzip:
+    src: "{{ var_perl_temp_dir }}\\{{ var_perl_package_name }}.zip"
+    dest: "{{ var_perl_temp_dir }}"
+
+- name: "Install perl with bat file"
+  win_command: PERL_STRAWBERRY.bat
+  args:
+    chdir: "{{ var_perl_temp_dir }}"
+    executable: cmd.exe
+
+- name: "Cleanup temp download folder"
+  win_file:
+    state: absent
+    path: "{{ var_perl_temp_dir }}"

@@ -1,0 +1,26 @@
+- name: "Set variables for checking"
+  set_fact:
+    check_version: ""
+    check_location: ""
+  when: win_asap_action == "check"
+
+- name: "Set variables for installing"
+  set_fact:
+    check_version: "{{ win_asap_package_version.split('_')[0][1:] }}"
+    check_location: "{{ win_asap_version_dir }}"
+  when: win_asap_action == "install" or win_asap_action == "force_install"
+
+- name: "Execute script"
+  script: "files/check.ps1 '{{ check_version }}' '{{ check_location }}'"
+  register: list_result
+
+- debug:
+    var: list_result.stdout_lines
+
+- name: "Count installed ASAP"
+  script: files/count.ps1
+  register: current_instance
+
+- name: "Set new_instance"
+  set_fact:
+    new_instance: "{{ current_instance.stdout_lines[0]|int + 1 }}"

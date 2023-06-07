@@ -1,0 +1,13 @@
+---
+## this is the playbook for radar gen 5 template node, or win 10 node.
+## Use for update action
+## HOW TO RUN :
+##  ansible-playbook playbooks/Radar5/Radar5_win_update_canape.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml
+- name: "Update canape"
+  hosts: win_ssh_biaas_agent
+  gather_facts: false
+  vars:
+    win_canape_force_install: true
+
+  roles:
+    - { role: had.win_canape, tags: ["win_canape","init"], win_canape_package_version: "CANape18.0.51.15" }

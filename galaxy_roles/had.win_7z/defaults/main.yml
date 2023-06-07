@@ -1,0 +1,6 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_7z_install_dir: C:\Program Files\7-Zip
+win_7z_force_install: false
+win_7z_version: 7z1900-x64.exe

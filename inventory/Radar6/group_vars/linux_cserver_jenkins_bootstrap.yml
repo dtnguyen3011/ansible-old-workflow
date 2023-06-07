@@ -1,0 +1,15 @@
+
+jenkins_master:
+  url: "https://rb-jmaas.de.bosch.com/RA6"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_api_key}}"
+  ssh_credentialsId: jenkins_agent_ssh_key
+  # update_config: true
+
+
+ansible_host: rb-psmp.bosch.com
+ansible_user: "{{ rbpam_username | default( sysuser.name ) }}@rbadmin_app1@{{ inventory_hostname }}"
+ansible_ssh_pass: "{{ rbpam_password | default( sysuser.pass ) }}"
+
+jenkins_user: rbadmin_app1
+jenkins_public_key: "{{ vault.{{ sysuser.name }}.agent_ssh_pub_key }}"

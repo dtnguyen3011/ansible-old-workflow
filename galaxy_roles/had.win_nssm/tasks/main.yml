@@ -1,0 +1,39 @@
+- name: "Setup temp folder for software download"
+  win_file:
+      state: directory
+      path: "{{ nssm_temp_dir }}"
+
+- name: "Create NSSM Program directory"
+  win_file:
+      state: directory
+      path: "{{ win_nssm_install_dir }}"
+
+- name: "Download NSSM base zip file"
+  win_get_url:
+      url: "http://abtv55162.de.bosch.com:8084/doit-mirror/NSSM/{{ win_nssm_version }}/nssm-{{ win_nssm_version }}.zip"
+      dest: "{{ nssm_temp_dir }}\\nssm-{{ win_nssm_version }}.zip"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack zip to Program directory"
+  win_unzip:
+      src: "{{ nssm_temp_dir }}\\nssm-{{ win_nssm_version }}.zip"
+      dest: "{{ win_nssm_install_dir }}\\"
+      creates: "{{ win_nssm_install_dir }}\\nssm-{{ win_nssm_version }}\\win64"
+
+- name: "Add NSSM to PATH"
+  win_path:
+      elements:
+          - "{{ win_nssm_install_dir }}\\nssm-{{ win_nssm_version }}\\win64"
+
+- name: "Reset ssh connection"
+  include_role:
+      name: had.win_ssh_reset
+  when: ansible_connection == "ssh"
+
+- name: "Cleanup temp download folder"
+  win_file:
+      state: absent
+      path: "{{ nssm_temp_dir }}"

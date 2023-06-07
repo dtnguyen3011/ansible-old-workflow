@@ -1,0 +1,2 @@
+jenkins_user_shell: "/bin/bash"
+ssh_service: "ssh"

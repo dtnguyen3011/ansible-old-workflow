@@ -1,0 +1,4 @@
+win_asap_install_dir: C:\Program Files\Vector
+win_asap_package_version: V15.0_SP6
+win_asap_version_dir: "ASAP2 Tool-Set {{ win_asap_package_version.split('_')[0][1:] }}"
+win_asap_action: "install"

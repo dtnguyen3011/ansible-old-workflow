@@ -1,0 +1,43 @@
+---
+- name: Install basic Tools
+  hosts: win_win10_jenkins_hw_testbench_hsw
+  gather_facts: false
+  roles:
+    - { role: had.win_7z, tags: ["win_7z", "init"] }
+    - { role: had.win_git, tags: ["win_git", "init"] }
+    - { role: had.win_itc2, tags: ["win_itc2", "init"] }
+
+
+
+# - name: Install HSW tools
+#   hosts: win_win10_jenkins_hw_testbench_hsw
+#   gather_facts: false
+#   tasks:
+#     - name: Install TCC RA6-DevLatest
+#       command: "C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\powershell.exe -ExecutionPolicy Bypass C:\\TCC\\Base\\InstallToolCollection\\InstallToolCollection.ps1 TCC_RA6_Windows_DevLatest.xml"
+#     - name: Download T32 installer
+#       get_url:
+#         url: https://inside-docupedia.bosch.com/confluence/download/attachments/1863665956/LauterbachAutoInstaller__2021_06_29_caller.bat?version=1&modificationDate=1626781316000&api=v2&download=true
+#         dest: temp/t32-installer.bat
+#     - name: Run T32 Installer
+#       command: ./temp/t32-installer.bat
+#       # todo cleanup
+
+
+- name: Connect HSW Testbench to jenkins
+  hosts: win_win10_jenkins_hw_testbench_hsw
+  vars:
+    jenkins_win_worker:
+      description: HSW HW-Testbench -- Connected and managed by ansible
+      executors: 1
+      labels: windows hsw_testbench stm32-disco-board
+  pre_tasks:
+    - name: Get largest volume on machine
+      win_shell: (Get-Volume | Sort-Object "Size" -Descending | Select-object -First 1).DriveLetter
+      register: volume
+      changed_when: false
+    - name: Set jenkins home directory
+      set_fact:
+        jenkins_home: "{{ volume.stdout | trim }}:\\j\\{{ project_key | default( jenkins_master.url.split('/')[3] ) }}"
+  roles:
+    - { role: had.win_jenkins-worker, tags: ["win_jenkins-worker"] }

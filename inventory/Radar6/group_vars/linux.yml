@@ -1,0 +1,17 @@
+---
+ansible_connection: ssh
+ansible_port: 22
+ansible_user: rgs9abt
+ansible_ssh_private_key_file: "{{ sysuser.ssh_dir }}/id_rsa"
+ansible_become_pass: "{{ sysuser.pass }}"
+
+jenkins_user: rgs9abt
+jenkins_domain_group: DE\\domain^users
+jenkins_user_domain_group: "{{ jenkins_user }}:{{ jenkins_domain_group }}"
+jenkins_agent_root: "/var/jenkins"
+
+docker_user: rgs9abt
+default_docker_config:
+  storage-driver: overlay2
+  log-level: info
+  data-root: /var/lib/docker

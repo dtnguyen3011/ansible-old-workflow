@@ -1,0 +1,6 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+proxy_url: rb-proxy-de.bosch.com
+proxy_username: "{{ sysuser.name }}"
+proxy_password: "{{ sysuser.password }}"

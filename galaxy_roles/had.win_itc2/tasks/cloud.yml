@@ -1,0 +1,14 @@
+- name: Download itc2 installer in BDC
+  win_get_url:
+    url: "{{ tcc_installer_location_cloud }}/updateITC2.exe"
+    dest: "{{ tcc_install_dir }}\\itc2\\updateITC2.exe"
+    headers: X-JFrog-Art-Api="{{ tcc_artifactory_api_key }}"
+  retries: 2
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: Add itc2 config to work in cloud
+  win_template:
+    src: userConfig_cloud.json.j2
+    dest: "{{ tcc_install_dir }}/itc2/userConfig.json"

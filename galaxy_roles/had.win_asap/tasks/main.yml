@@ -1,0 +1,27 @@
+- name: "DELETE ASAP"
+  include_tasks: delete.yml
+  when: (win_asap_action == "delete" and win_asap_uninstall_version is defined) or win_asap_action == "force_install"
+
+- name: "LIST ASAP"
+  include_tasks: check.yml
+  when: win_asap_action == "check" or win_asap_action == "install" or win_asap_action == "force_install"
+
+- block:
+    - name: "Pre-check on installed instance"
+      fail:
+        msg: "ASAP {{ check_version }} on path '{{ win_asap_install_dir }}\\{{ check_location }}' is available. CAN NOT be installed anymore"
+      when: list_result.stdout_lines | length > 0
+
+    - name: "Pre-check on instances number"
+      fail:
+        msg: "There are more than 5 ASAP tool instances have been installed in the machines. CAN NOT be installed anymore"
+      when: new_instance >= "5"
+  when: win_asap_action == "install" or win_asap_action == "force_install"
+  rescue:
+    - name: "Pre-check FAILED"
+      set_fact:
+        asap_pre_check_status: "FAILED"
+
+- name: "INSTALL ASAP"
+  include_tasks: install.yml
+  when: (win_asap_action == "install" and asap_pre_check_status is undefined) or win_asap_action == "force_install"

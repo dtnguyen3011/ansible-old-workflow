@@ -1,0 +1,155 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ var_git_temp_dir }}"
+
+- name: "set components_name"
+  set_fact:
+    components_name: "icons,ext\\shellhere,ext\\guihere,assoc,assoc_sh"
+
+- name: "set components_name with git_lfs"
+  set_fact:
+    components_name: "icons,ext\\shellhere,ext\\guihere,gitlfs,assoc,assoc_sh"
+  when:
+    - win_git_lfs_install | bool
+
+- name: "Download git installer {{ win_git_version }}"
+  win_get_url:
+    url: "{{ var_git_package_location }}/{{ win_git_version }}"
+    dest: "{{ var_git_temp_dir }}\\{{ win_git_version }}"
+  retries: 6
+  delay: 10
+  register: git_result
+  until: git_result is succeeded
+
+- name: "Uninstall existing git version for upgrade"
+  win_package:
+    product_id: 'Git_is1'
+    state: absent
+  when:
+    - win_git_update | bool
+
+- name: "Restart after uninstall git"
+  win_reboot:
+    reboot_timeout: 600
+  when:
+    - win_git_update | bool
+
+- name: "Install git for windows {{ win_git_version }}"
+  win_package:
+    path: "{{ var_git_temp_dir }}\\{{ win_git_version }}"
+    product_id: 'Git_is1'
+    arguments:
+      - /SILENT
+      - /COMPONENTS={{ components_name }}
+
+- name: "Add git to PATH"
+  win_path:
+    elements:
+      - "{{ win_git_cmd_dir }}"
+
+- name: "Reset ssh connection"
+  include_role:
+    name: had.win_ssh_reset
+  when: ansible_connection == "ssh"
+
+- name: "Reset all git config"
+  win_command:
+    "git config --{{ item.scope }} --unset-all {{ item.name }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system }
+    - { name: "lfs.defaulttokenttl", value: "300", scope: global }
+    - { name: "submodule.fetchJobs", value: "2", scope: global }
+    - { name: "user.name", value: "\"{{ win_git_user_fullname }}\"", scope: global }
+    - { name: "user.email", value: "{{ win_git_user_email }}", scope: global }
+  ignore_errors: true
+
+- name: "Configure git"
+  win_command:
+    "git config --{{ item.scope }} --add {{ item.name }} {{ item.value }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system }
+    - { name: "lfs.defaulttokenttl", value: "300", scope: global }
+    - { name: "submodule.fetchJobs", value: "2", scope: global }
+    - { name: "user.name", value: "\"{{ win_git_user_fullname }}\"", scope: global }
+    - { name: "user.email", value: "{{ win_git_user_email }}", scope: global }
+
+- name: "Initialize git lfs"
+  win_shell: "git lfs install"
+  when:
+    - win_git_lfs_install | bool
+
+- name: "Check if user for private key"
+  win_stat:
+    path: "{{ var_user_home_dir }}"
+  register: WIN_GIT_HOME
+  when:
+    - win_git_user is defined
+    - win_git_add_private_key | bool
+
+- name: "User has not logged in - Create profile for user"
+  win_user_profile:
+    state: present
+    username: "{{ win_git_user.username }}"
+    name: "{{ win_git_user.sid }}"
+  when:
+    - win_git_user is defined
+    - not WIN_GIT_HOME.stat.exists
+    - win_git_add_private_key | bool
+
+- name: "Add .ssh directory"
+  win_file:
+    path: "{{ var_user_home_dir }}\\.ssh"
+    state: directory
+  when: win_git_add_private_key | bool
+
+- name: "Add private key for user {{ win_git_user.username }}"
+  win_template:
+    dest: "{{ var_user_home_dir }}\\.ssh\\id_rsa"
+    src: id_rsa.j2
+  when: win_git_add_private_key | bool
+
+- name: "Add public key for user {{ win_git_user.username }}"
+  win_template:
+    dest: "{{ var_user_home_dir }}\\.ssh\\id_rsa.pub"
+    src: id_rsa.pub.j2
+  when: win_git_add_private_key | bool
+
+- name: "Create RSA keys for know hosts"
+  win_command: "ssh-keyscan.exe -p {{ item.port }} {{ item.hostname }}"
+  args:
+    chdir: C:\Program Files\Git\usr\bin
+  loop: "{{ win_git_known_hosts }}"
+  register: RSA_KEYS
+  when:
+    - win_git_known_hosts is defined
+    - win_git_add_private_key | bool
+
+- name: "Check if known_hosts exists"
+  win_stat:
+    path: "{{ var_user_home_dir }}\\.ssh\\known_hosts"
+  register: known_hosts_file
+  when: win_git_known_hosts is defined
+
+- name: "Remove previous RSA keys"
+  win_lineinfile:
+    path: "{{ var_user_home_dir }}\\.ssh\\known_hosts"
+    regexp: "{{ item.hostname | replace('.', '\\.') }}"
+    state: absent
+  loop: "{{ win_git_known_hosts }}"
+  when:
+    - win_git_known_hosts is defined
+    - known_hosts_file.stat.exists
+
+- name: "Add RSA keys to know_hosts file"
+  win_lineinfile:
+    path: "{{ var_user_home_dir }}\\.ssh\\known_hosts"
+    line: "{{ item.stdout }}"
+    create: true
+  loop: "{{ RSA_KEYS.results }}"
+  when: RSA_KEYS.results is defined
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ var_git_temp_dir }}"

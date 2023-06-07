@@ -1,0 +1,39 @@
+- hosts: testservers
+
+  vars:
+    - nt_user: "{{ lookup('env','USER') }}"
+    - nt_user_pw: "{{ ansible_become_pass }}"
+
+  # vars_prompt:
+  #   - name: "nt_user_pw"
+  #     prompt: "Enter your NT user password"
+  #     private: true
+  #     confirm: true
+
+  pre_tasks:
+    - name: Check NT-User
+      fail:
+        msg: "NT-User is not set"
+      when: not nt_user
+      tags: ['always']
+    - name: Adquery Name
+      command: "adquery user -b displayName {{ nt_user }}"
+      register: adquery_name
+      changed_when: false
+      tags: ['always']
+    - name: Adquery Domain
+      shell: "adquery user -b _NtlmName {{ nt_user }} | cut -d + -f1"
+      register: adquery_domain
+      changed_when: false
+      tags: ['always']
+    - name: Set variables containing adquery results
+      set_fact:
+        domain: "{{ adquery_domain.stdout }}"
+        full_name: "{{ adquery_name.stdout }}"
+      tags: ['always']
+    - debug:
+        msg: "Performing setup for user:\nName: {{ full_name }}\nDomain: {{ domain }} \n"
+      tags: ['always']
+
+  roles:
+    - cntlm

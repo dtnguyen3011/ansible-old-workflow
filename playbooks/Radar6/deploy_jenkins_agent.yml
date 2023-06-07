@@ -1,0 +1,57 @@
+---
+- name: Handle Windows Jenkins nodes
+  hosts: win_jenkins_agent
+  vars:
+    jenkins_win_worker:
+      description: Connected and managed by ansible
+      executors: 4
+      labels: windows build_node tcc
+    tcc_in_bdc: false
+    tcc_install_tool_collection: RA6:DevLatest
+  pre_tasks:
+    - name: Get largest volume on machine
+      win_shell: (Get-Volume | Sort-Object "Size" -Descending | Select-object -First 1).DriveLetter
+      register: volume
+      changed_when: false
+    - name: Set jenkins home directory
+      set_fact:
+        jenkins_home: "{{ volume.stdout | trim }}:\\j\\{{ project_key | default( jenkins_master.url.split('/')[3] ) }}"
+
+  roles:
+    - { role: had.win_7z, tags: ["win_7z", "init"] }
+    - { role: had.win_git, tags: ["win_git", "init"] }
+    - { role: had.win_anaconda, tags: ["win_anaconda", "init"] }
+    - { role: had.win_itc2, tags: ["win_itc2", "init"] }
+    - { role: had.win_jenkins-worker, tags: ["win_jenkins-worker" ] }
+    - { role: had.win_enable_long_paths, tags: ["win_enable_long_paths", "init" ] }
+
+- name: Handle linux Jenkins nodes
+  hosts:
+    - linux_jenkins_agent
+    - linux_cserver
+  vars:
+    jenkins_worker:
+      description: Connected and managed by ansible
+      executors: 4
+      labels: "build_node linux docker lucx_agent prod {{ jenkins_agent_group_specific_labels }}"
+    jenkins_home: "{{ jenkins_agent_root }}/{{ project_key | default( jenkins_master.url.split('/')[3] ) }}"
+    docker_version: 20.10.5
+    compose_version: 1.28.6
+  roles:
+    - { role: had.git_bosch, tags: ["git_bosch"] }
+    - { role: had.docker-ce, tags: ["docker-ce"] }
+    - { role: had.docker-compose, tags: ["docker-compose"] }
+    - { role: had.jenkins-master-add-worker, tags: ["jenkins-master-add-worker"] }
+  post_tasks:
+    - name: Configure Jenkins home ownership and required startup commands
+      become: true
+      ansible.builtin.shell: |
+        chown -R {{ jenkins_user_domain_group }} {{ jenkins_home }}
+        chmod u+wx /etc/rc.d/rc.local
+        sh -c "grep -qxF 'mount /tmp -o remount,exec' /etc/rc.d/rc.local || echo -e '\nmount /tmp -o remount,exec' >> /etc/rc.d/rc.local"
+        sh -c "grep -qxF 'net.ipv4.ip_forward=1' /etc/sysctl.conf || echo -e '\nnet.ipv4.ip_forward=1' >> /etc/sysctl.conf"
+    - name: Reboot the linux agent
+      become: true
+      ansible.builtin.shell: sleep 5 && reboot
+      async: 1
+      poll: 0

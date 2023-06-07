@@ -1,0 +1,8 @@
+---
+## this is the playbook for radar gen 5 template node, or win 10 node.
+## Use for update action
+- name: "install roles on nodes"
+  hosts: win_ssh_biaas_agent
+  gather_facts: false
+  roles:
+    - { role: had.win_vs2019, tags: ["win_vs2019","init"], win_vs2019_update_flag: true, win_vs2019_update_params: "--add Microsoft.VisualStudio.Component.VC.v141.x86.x64 --add Microsoft.VisualStudio.Component.Debugger.JustInTime --remove Component.Microsoft.VisualStudio.LiveShare --remove Microsoft.VisualStudio.Component.VC.DiagnosticTools"}

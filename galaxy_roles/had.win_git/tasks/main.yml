@@ -1,0 +1,14 @@
+- name: "Pre-check on GIT"
+  win_command: git --version
+  ignore_errors: true
+  register: git_version
+  when: not win_git_update
+
+- name: "Pre-check"
+  debug:
+    msg: "git already installed. No need to run"
+  when: not win_git_update and git_version.stdout is defined
+
+- name: "INSTALL"
+  include_tasks: install.yml
+  when: (win_git_update | bool) or (git_version.stdout is undefined)

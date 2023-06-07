@@ -1,0 +1,10 @@
+- include: "os/{{ ansible_os_family }}.yml"
+
+- name: Check for git symlink
+  stat: path=/usr/local/bin/git
+  register: git_present
+
+- name: create git symlink
+  file: src=/usr/bin/git dest=/usr/local/bin/git owner=root group=root state=link
+  become: true
+  when: not git_present.stat.exists

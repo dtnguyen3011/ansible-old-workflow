@@ -1,0 +1,24 @@
+---
+- name: "Reset all git config"
+  shell: "git config --{{ item.scope }} --unset-all {{ item.name }}"
+  become: "{{ item.become_flag }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system, become_flag: yes }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global, become_flag: no }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global, become_flag: no }
+  ignore_errors: true
+
+- name: "Configure git"
+  shell: "git config --{{ item.scope }} --add {{ item.name }} {{ item.value }}"
+  become: "{{ item.become_flag }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system, become_flag: yes }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global, become_flag: no }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global, become_flag: no }
+
+- name: "Add pip conf"
+  template:
+    dest: "/etc/pip.conf"
+    src: ../templates/pip.ini.j2
+    force: false
+  become: yes

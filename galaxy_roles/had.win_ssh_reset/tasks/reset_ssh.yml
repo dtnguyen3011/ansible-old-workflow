@@ -1,0 +1,4 @@
+# Resets the ssh connection
+
+- name: "Reset connection (only works for ssh)"
+  meta: reset_connection

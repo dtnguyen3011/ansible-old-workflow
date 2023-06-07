@@ -1,0 +1,109 @@
+- name: "Setup temp folder for anaconda setup files"
+  win_file:
+    state: directory
+    path: "{{ anaconda_temp_dir }}"
+
+- name: "Create anaconda Program directory"
+  win_file:
+    state: directory
+    path: "{{ win_anaconda_install_dir }}"
+
+- name: "Download anaconda install file"
+  win_get_url:
+    url: "http://abtv55162.de.bosch.com:8084/doit-mirror/anaconda/{{ win_anaconda_version }}/\
+         Anaconda{{ win_anaconda_version }}-Windows-x86_64.exe"
+    dest: "{{ anaconda_temp_dir }}\\Anaconda{{ win_anaconda_version }}-Windows-x86_64.exe"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+  when: win_anaconda_do_install|bool
+
+- name: "Remove old version(s)"
+  include_tasks: "uninstall.yml"
+  loop: "{{ anaconda_supported_versions | rejectattr('short_vers', 'equalto', win_anaconda_version) | list }}"
+  when: win_anaconda_do_install|bool
+
+- name: "Install anaconda "
+  win_package:
+    path: "{{ anaconda_temp_dir }}\\Anaconda{{ win_anaconda_version }}-Windows-x86_64.exe"
+    creates_path: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}"
+    arguments:
+      - /S
+      - /InstallationType=AllUsers
+      - /AddToPath=1
+      - "/D={{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}"
+  when: win_anaconda_do_install|bool
+
+- name: "Cleanup temp download folder"
+  win_file:
+    state: absent
+    path: "{{ anaconda_temp_dir }}"
+
+- name: Copy .condarc file to global install location {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}
+  win_copy:
+    src: .condarc
+    dest: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\"
+  when: win_anaconda_update_packages|bool
+
+- name: Copy useanaconda.bat file to {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\condabin
+  win_copy:
+    src: useanaconda.bat
+    dest: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\condabin\\"
+  when: win_anaconda_update_packages|bool
+
+- name: "Give anaconda user write access to the anaconda folder"
+  win_acl:
+    user: "{{ win_anaconda_user }}"
+    path: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}"
+    state: present
+    type: allow
+    propagation: InheritOnly
+    rights: Read,Write,Modify,FullControl,Delete
+
+- name: "Add rb-repository as trusted site in Registry"
+  win_regedit:
+    path: 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\EscDomains\bosch.com\rb-artifactory'
+    name: https
+    data: "2"
+    type: dword
+
+- name: "Copy libcrypto-1_1-x64.dll"
+  win_shell: "copy {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\Library\\bin\\libcrypto-1_1-x64.dll {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\DLLs"
+
+- name: "Copy libssl-1_1-x64.dll"
+  win_shell: "copy {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\Library\\bin\\libssl-1_1-x64.dll {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\DLLs"
+
+- name: Run conda update
+  win_shell: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\Scripts\\activate.bat \
+              {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }} \
+              | {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\condabin\\conda.bat update -c defaults conda -y"
+  vars:
+    executable: cmd
+  when:
+    - win_anaconda_do_install|bool
+    - win_anaconda_update_packages|bool
+
+- name: Install conda packages
+  win_shell: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\Scripts\\activate.bat \
+              {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }} \
+              | {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\condabin\\conda install --update-deps -c defaults {{ win_anaconda_packages }} -y"
+  when:
+    - win_anaconda_packages is defined
+    - win_anaconda_update_packages|bool
+  vars:
+    executable: cmd
+
+- name: Install conda packages on specified channels
+  win_shell: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\Scripts\\activate.bat \
+              {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }} \
+              | {{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\condabin\\conda install --update-deps -c {{ item.channel }} {{ item.packages }} -y"
+  loop: "{{ win_anaconda_channel_packages }}"
+  when:
+    - win_anaconda_channel_packages is defined
+    - win_anaconda_update_packages|bool
+  vars:
+    executable: cmd
+
+- name: "Init conda"
+  win_shell: "{{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}\\condabin\\conda init"

@@ -1,0 +1,56 @@
+# shared roles can be found in the Ansible Bitbucket project at https://sourcecode01.de.bosch.com/projects/ANSIBLE
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/ansible-role-template
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.cntlm
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.bosch_apt_sources
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.bosch_certificates
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.docker-ce
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.docker-compose
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.git_bosch
+#- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.git
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.java
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.jenkins-master-add-worker
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.jenkins-worker
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.rb-pam
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.ssh
+
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_7z
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_anaconda
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_canoe
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_docker
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_git
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_java
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_jenkins-master-add-node
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_jenkins-worker
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_nssm.git
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_ssh_reset
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_itc2.git
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_enable_long_paths.git
+# Radar 5 need following roles
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_7z
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_curl
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_python
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_firefox
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_notepad
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_t32_gen5
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_tcc
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_vs2015
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_git
+
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_itc
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_greenhills_ifx
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_hawcc
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_asap
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_canape
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_pdv_dotnet
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_perl_tcc
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_vs2019
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_telegraf
+
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_jenkins-worker
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_java
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_nssm.git
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_ssh_reset.git
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_jenkins-master-add-node
+
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.jenkins-master-add-worker
+- src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.java

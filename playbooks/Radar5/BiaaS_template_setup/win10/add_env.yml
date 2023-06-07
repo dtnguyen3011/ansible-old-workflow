@@ -1,0 +1,54 @@
+---
+- name: "Move Window PATH environment to bottom"
+  win_path:
+    elements:
+      - '%SYSTEMROOT%'
+      - '%SYSTEMROOT%\system32'
+      - '%SYSTEMROOT%\System32\Wbem'
+      - '%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\'
+      - '%SYSTEMROOT%\System32\OpenSSH\'
+      - 'C:\WINDOWS'
+      - 'C:\WINDOWS\system32'
+      - 'C:\WINDOWS\System32\Wbem'
+      - 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\'
+      - 'C:\WINDOWS\System32\OpenSSH\'
+      - 'C:\Program Files\Git\usr\bin'
+    state: absent
+
+- name: "Set PATH environment variable"
+  win_path:
+    elements:
+      - 'C:\Program Files\curl\bin'
+      - 'C:\Python3'
+      - 'C:\Python3\Scripts'
+      - 'C:\Program Files\Git\cmd'
+      - 'C:\Program Files\Microsoft DNX\Dnvm\'
+      - 'C:\TCC'
+      - 'C:\TCC\itc2'
+      - 'C:\TOOLS\ATT\Graphviz\bin'
+      - 'C:\TOOLS\doxygen\1.8.9.1\bin'
+      - 'C:\TCC\Tools\cmake\3.17.1_WIN64\bin'
+      - '%USERPROFILE%\.dnx\bin'
+      - '%SYSTEMROOT%'
+      - '%SYSTEMROOT%\system32'
+      - '%SYSTEMROOT%\System32\Wbem'
+      - '%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\'
+      - '%SYSTEMROOT%\System32\OpenSSH\'
+      - 'C:\Program Files\Git\usr\bin'
+
+- name: "Set other environment variable"
+  win_environment:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    level: "{{ item.level }}"
+  with_items:
+    - { name: "OneDrive", value: "%USERPROFILE%\\OneDrive", level: user}
+    - { name: "ARMLMD_LICENSE_FILE", value: "8224@rb-lic-armlmd-ccda-video.de.bosch.com", level: machine}
+    - { name: "BOOST_ROOT", value: "C:\\TCC\\Tools\\boost\\1.63.0_WIN64", level: machine}
+    - { name: "PSModulePath", value: "C:\\Program Files\\WindowsPowerShell\\Modules;C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\Modules", level: machine}
+    - { name: "PYTHON3", value: "C:\\TCC\\Tools\\python3\\3.9.1-2_WIN64", level: machine}
+    - { name: "TERM", value: "dumb", level: machine}
+    - { name: "TELELOGIC_LICENSE_FILE", value: "1706@rb-lic-telelogic.de.bosch.com", level: machine }
+
+- name: "Reboot"
+  win_reboot:

@@ -1,0 +1,16 @@
+containerd_package: "containerd.io-{{ containerdio_version }}_{{ ansible_architecture }}"
+
+docker_installer_packages:
+  - "{{ containerd_package }}"
+  - "docker-{{ docker_engine_type }}{{ docker_package_version_string }}"
+  - "docker-{{ docker_engine_type }}-cli{{ docker_package_version_string }}"
+  - "docker-ce-rootless-extras{{ docker_package_version_string }}"
+
+dependencies:
+  - "fuse-overlayfs"
+  - "fuse3"
+  - "fuse3-libs"
+  - "libslirp"
+  - "slirp4netns"
+
+dockerce_install_dir: "/tmp/dockerce_install"

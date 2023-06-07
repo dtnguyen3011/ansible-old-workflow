@@ -1,0 +1,17 @@
+---
+- name: Handle linux Jenkins nodes
+  hosts:
+    #- linux_jenkins_agent
+    #- linux_jenkins_cserver
+    - linux_jenkins
+  vars:
+    jenkins_worker:
+      description: Connected and managed by ansible
+      executors: 4
+      labels: build_node linux docker lucx_agent
+    jenkins_home: "/var/jenkins/{{ project_key | default( jenkins_master.url.split('/')[3] ) }}"
+  roles:
+    - { role: had.git_bosch, tags: ["git_bosch"] }
+    - { role: had.docker-ce, tags: ["docker-ce"] }
+   # - { role: had.docker-compose, tags: ["docker-compose"] }
+    - { role: had.jenkins-master-add-worker, tags: ["jenkins-master-add-worker"] }

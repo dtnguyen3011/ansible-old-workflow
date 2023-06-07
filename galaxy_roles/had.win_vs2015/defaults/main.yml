@@ -1,0 +1,5 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_vs2015_pid: "{12B68AD4-A9C9-3330-BFAE-BFCCDDB96660}"
+win_vs2015_force_install: false

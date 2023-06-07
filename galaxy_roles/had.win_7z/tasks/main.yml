@@ -1,0 +1,16 @@
+- name: "Pre-check on 7zip"
+  win_command: 7z -h
+  ignore_errors: true
+  register: win_7z_status
+  when: not win_7z_force_install
+
+- name: "Pre-check"
+  debug:
+    msg: "7zip already installed. No need to run"
+  when: not win_7z_force_install and win_7z_status.stdout is defined
+
+- name: "INSTALL"
+  # include_tasks: install.yml
+  debug:
+    msg: "RUN INSTALL"
+  when: (win_7z_force_install | bool) or (win_7z_status.stdout is undefined)

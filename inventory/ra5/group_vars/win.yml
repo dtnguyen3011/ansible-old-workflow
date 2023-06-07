@@ -1,0 +1,22 @@
+# variables valid for all Windows machines
+ansible_user: "{{ sysuser.domain }}\\{{ sysuser.name }}"  # already set in all but specifying it here again to have user and password at one location
+ansible_password: "{{ sysuser.pass }}"  # when using windows clients with openSSH this requires the 'sshpass' package to be installed
+
+# Git Settings
+win_git_version: "Git-2.27.0-64-bit.exe"
+win_git_update: false
+win_git_lfs_install: true
+win_git_lfs_version: "git-lfs-windows-v2.11.0.exe"
+win_git_add_private_key: true
+win_git_known_hosts:
+  [{port: 7999, hostname: sourcecode01.de.bosch.com}
+  ,{port: 7999, hostname: sourcecode.socialcoding.bosch.com}]
+win_git_user:
+  username: "{{ sysuser.name }}"
+  sid: "S-1-5-21-220523388-115176313-1801674531-2908696"
+  privkey: "{{ sysuser.ssh_key }}"
+  pubkey: "{{ sysuser.ssh_pub_key }}"
+
+win_telegraf:
+  influxdb_urls: ["http://abtv55170.de.bosch.com:8086/"]
+  influxdb_database: ccda_radar_telegraf

@@ -1,0 +1,3 @@
+dependencies:
+  - role: had.win_nssm
+    src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_nssm.git

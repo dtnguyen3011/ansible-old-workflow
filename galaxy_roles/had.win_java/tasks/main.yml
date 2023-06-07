@@ -1,0 +1,22 @@
+- name: "Check java version in cmd"
+  win_command: java -version
+  register: java_version
+  ignore_errors: true
+  when: not win_java_force_install
+
+- name: "Pre-check"
+  debug:
+    msg: "JAVA was already installed with version {{ java_version.stderr_lines }}. No need to run"
+  when: (not win_java_force_install) and (java_version.stderr is defined) and (java_version.stderr | length > 0)
+
+- name: "DO INSTALL"
+  block:
+    - name: "DELETE all old version java"
+      script: script/remove_java.ps1
+
+    - include_tasks: install.yml
+  when: (win_java_force_install | bool) or (java_version.stderr is undefined)
+  rescue:
+    - name: Print when errors
+      ansible.builtin.debug:
+        msg: 'I caught an error, can do stuff here to fix it, :-)'

@@ -1,0 +1,87 @@
+---
+- name: "Handle WINDOWS 10 Jenkins nodes"
+  hosts: win_10_jnks
+  gather_facts: false
+
+  pre_tasks:
+    - name: "restart sshd to reflect admin rights"
+      win_service:
+        name: sshd
+        state: restarted
+      become: true
+      vars:
+        ansible_become: true
+        ansible_become_method: runas
+        ansible_become_user: SYSTEM
+      async: 60
+      poll: 0
+      register: sshd_restart
+
+    - name: "wait for connectivity to be resumed after sshd restart"
+      async_status:
+        jid: "{{ sshd_restart.ansible_job_id }}"
+      register: job_result
+      until: job_result.finished
+      retries: 60
+      delay: 1
+      ignore_errors: true
+
+    - name: "Reset ssh connection"
+      include_tasks: "reset_ssh.yml"
+      when: job_result is succeeded
+
+    - name: "Get largest volume on machine"
+      win_shell: (Get-Volume | Sort-Object "Size" -Descending | Select-object -First 1).DriveLetter
+      register: volume
+
+    - name: "Set jenkins home directory"
+      set_fact:
+        jenkins_home: "{{ volume.stdout | trim }}:\\j\\ws"
+
+    - name: "Deactivate standby and hibernation"
+      win_shell: "{{ item }}"
+      with_items:
+        - powercfg.exe -x -disk-timeout-ac 0
+        - powercfg.exe -x -disk-timeout-dc 0
+        - powercfg.exe -x -standby-timeout-ac 0
+        - powercfg.exe -x -standby-timeout-dc 0
+        - powercfg.exe -x -hibernate-timeout-ac 0
+        - powercfg.exe -x -hibernate-timeout-dc 0
+
+    - name: "Add operation users to 'Remote Desktop Users' group"
+      win_group_membership:
+        name: "Remote Desktop Users"
+        members: "{{ server_access }}"
+      tags: ["update_developers"]
+
+  roles:
+    - { role: win_7z, tags: ["win_7z","init"] }
+    # - { role: win_anaconda, tags: ["win_anaconda", "init", "base"] }
+    # - { role: win_git, tags: ["win_git","init"] }
+    - { role: win_java, tags: ["win_java","init"] }
+    - { role: win_python, tags: ["win_python","init"] }
+    - { role: win_tcc, tags: ["win_tcc","init"] }
+    - { role: win_jenkins-master-add-node, tags: ["win_jenkins-master-add-node", "init", "update_on_master"] } # This is important. Call add-node before deploy node
+    - { role: win_jenkins-worker, tags: ["win_jenkins-worker" ] }
+
+  post_tasks:
+    - name: "Initial clone"
+      win_shell: "git clone ssh://git@sourcecode01.de.bosch.com:7999/PROJECT/REPO.git {{ jenkins_home }}\\0"
+      ignore_errors: True
+
+    - name: "Initial checkout"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git lfs pull
+      args:
+        chdir: "{{ jenkins_home }}\\0"
+
+    - name: "Copy node directory for all others"
+      win_copy:
+        remote_src: true
+        src: "{{ jenkins_home }}\\0\\"
+        dest: "{{ item }}\\"
+        force: false
+      with_sequence: start=1 end={{ ansible_executor_count - 1 if ansible_executor_count > 1 else 1 }} format={{ jenkins_home }}\\%x
+      when: ansible_executor_count > 1

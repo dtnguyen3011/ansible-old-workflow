@@ -1,0 +1,29 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ hawcc_temp_dir }}"
+
+- name: "Download hawcc package"
+  win_get_url:
+    url: "{{ hawcc_package_location }}"
+    dest: "{{ hawcc_temp_dir }}\\2.9.7082.17600_beta4_WIN64.zip"
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack hawcc"
+  win_unzip:
+    src: "{{ hawcc_temp_dir }}\\2.9.7082.17600_beta4_WIN64.zip"
+    dest: "{{ hawcc_install_dir }}"
+    creates: "{{ hawcc_install_dir }}"
+
+- name: "Add hawcc to PATH"
+  win_path:
+    elements:
+      - "{{ hawcc_install_dir }}"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ hawcc_temp_dir }}"

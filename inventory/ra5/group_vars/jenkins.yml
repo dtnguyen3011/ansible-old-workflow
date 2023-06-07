@@ -1,0 +1,30 @@
+jenkins_master:
+  url: "https://rb-jmaas.de.bosch.com/radar_customer_gen5"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_api_key }}"
+  ssh_credentialsId: LUCXSSH
+  update_config: true
+
+jenkins_win_worker:
+  description: "Connected and managed by ansible"
+  executors: 4
+  labels: "ansible_test ansible_windows"
+
+jenkins_home: "C:\\JT"
+win_jenkins_service:
+  username: "{{ sysuser.domain }}\\{{ sysuser.name }}"
+  password: "{{ sysuser.pass }}"
+
+jenkins_jet:
+  url: "https://rb-jmaas.de.bosch.com/radar_customer_gen5_jet"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_jet_api_key }}"
+  ssh_credentialsId: LUCXSSH
+  update_config: true
+
+jenkins_dev:
+  url: "https://rb-jmaas.de.bosch.com/radar_customer_gen5_dev"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_dev_api_key }}"
+  ssh_credentialsId: LUCXSSH
+  update_config: true

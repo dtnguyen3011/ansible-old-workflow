@@ -1,0 +1,7 @@
+---
+- name: "Enable DelayedExpansion"
+  win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Command Processor
+    name: DelayedExpansion
+    data: 1
+    type: dword

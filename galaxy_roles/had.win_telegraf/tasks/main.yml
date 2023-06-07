@@ -1,0 +1,19 @@
+- name: "Pre-check on win_telegraf_action_flag"
+  set_fact:
+    win_telegraf_action_flag: "check"
+  when: (win_telegraf_action_flag is not defined) or ((win_telegraf_action_flag != "install") and (win_telegraf_action_flag != "update") and (win_telegraf_action_flag != "delete"))
+
+- name: "Using mode"
+  debug:
+    var: win_telegraf_action_flag
+
+- name: "CHECK TELEGRAF"
+  include_tasks: check.yml
+
+- name: "DELETE TELEGRAF"
+  include_tasks: delete.yml
+  when: (win_telegraf_action_flag == "update") or (win_telegraf_action_flag == "delete" and telegraf_service.exists)
+
+- name: "INSTALL TELEGRAF"
+  include_tasks: install.yml
+  when: (win_telegraf_action_flag == "update") or (win_telegraf_action_flag == "install" and not telegraf_service.exists)

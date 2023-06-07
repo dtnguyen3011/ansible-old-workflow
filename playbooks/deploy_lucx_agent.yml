@@ -1,0 +1,42 @@
+---
+#ATTENTON THIS IS NOT WORKING YET
+- NOT WORKING YET, however this cold be a role
+
+- name: Handle Windows lucx_agent Jenkins nodes
+  hosts: win_jenkins_lucx_agent
+  gather_facts: false
+  vars:
+    win_jenkins_worker:
+      description: "Connected and managed by ansible"
+      executors: 4
+      labels: "lucx_agent windows"
+  pre_tasks:
+    - name: Get largest volume on machine
+      win_shell: (Get-Volume | Sort-Object "Size" -Descending | Select-object -First 1).DriveLetter
+      register: volume
+      changed_when: false
+    - name: Set jenkins home directory
+      set_fact:
+        jenkins_home: "{{ volume.stdout | trim }}:\\j\\lucx_agent"
+        
+  roles:
+    - win_curl
+    - win_graphviz
+    - { role: had.win_7z, tags: ["win_7z", "init"] }
+    - { role: had.win_git, tags: ["win_git", "init"] }
+    # - { role: had.win_itc2, tags: ["win_itc2", "init"] }
+    ##- { role: had.win_jenkins-master-add-node, tags: ["win_jenkins-master-add-node", "init", "update_on_master"] } # This is important. Call add-node before deploy node
+    - { role: had.win_jenkins-worker, tags: ["win_jenkins-worker" ] }
+
+- name: Handle linux lucx_agent Jenkins nodes
+  hosts: linux_jenkins_lucx_agent # linux_lucx_agent
+  vars:
+    jenkins_worker:
+      description: "Connected and managed by ansible"
+      executors: 4
+      labels: "lucx_agent linux"
+  roles:
+    - curl
+    - graphviz
+    - { role: had.git_bosch, tags: ["git_bosch"] }
+    - { role: had.jenkins-master-add-node, tags: ["jenkins-master-add-node", "init", "update_on_master"] } # This is important. Call add-node before deploy node

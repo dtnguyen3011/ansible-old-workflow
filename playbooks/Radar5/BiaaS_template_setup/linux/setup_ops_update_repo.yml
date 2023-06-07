@@ -1,0 +1,31 @@
+---
+- name: "Create opt directory"
+  file:
+    path: /opt/tools/ci_tools
+    state: directory
+    mode: '0755'
+    owner: "{{ sysuser.name }}"
+  become: yes
+
+- name: "Clone CI_TOOLS repo"
+  git:
+    repo: 'ssh://git@sourcecode01.de.bosch.com:7999/radtoolcust/ci_tools.git'
+    dest: /opt/tools/ci_tools
+    version: master
+
+- name: "Assign execute permission to sh script"
+  shell: "chmod +x /opt/tools/ci_tools/templateVM/UpdateRepo.sh"
+
+# - name: "Add entry to Crontab"
+#   cron:
+#     name: MAILTO
+#     env: yes
+#     job: xcdaradarcontinuousx@bosch.com
+
+# - name: "Add Crontab"
+#   cron:
+#     name: "Update Repo"
+#     minute: "0"
+#     hour: "0"
+#     weekday: "1-5"
+#     job: "/opt/tools/ci_tools/templateVM/UpdateRepo.sh"

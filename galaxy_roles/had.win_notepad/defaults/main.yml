@@ -1,0 +1,6 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_notepad_install_dir: C:\Program Files\Notepad++
+win_notepad_package_name: npp.7.9.3.Installer.exe
+win_notepad_force_install: false

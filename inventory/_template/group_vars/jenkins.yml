@@ -1,0 +1,15 @@
+---
+jenkins_master:
+  url: "https://rb-jmaas.de.bosch.com/RA6"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_api_key}}"
+  ssh_credentialsId: jenkins_agent_ssh_key
+  # update_config: true
+
+
+jenkins_user: "{{ sysuser.name }}"
+jenkins_public_key: "{{ vault.rgs9abt.agent_ssh_pub_key }}"
+
+win_jenkins_service:
+  username: "{{ sysuser.domain }}\\{{ sysuser.name }}"
+  password: "{{ sysuser.pass }}"

@@ -1,0 +1,2 @@
+win_nssm_version: "2.24"
+win_nssm_install_dir: "C:\\Program Files\\nssm"

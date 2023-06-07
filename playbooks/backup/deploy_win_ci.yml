@@ -1,0 +1,34 @@
+---
+- name: "Handle NRCS Windows CI nodes"
+  hosts: nrcs_win_ci
+  gather_facts: false
+
+  roles:
+# Pre agent configuration
+    - role: set_jenkins_home
+    - role: disable_standby
+    - role: add_remote_user
+# Tool Installers
+    - role: had.win_anaconda
+    - role: had.win_chrome
+    - role: had.win_ffmpeg
+    - role: had.win_firefox
+    - role: had.win_git
+    - role: had.win_java
+    - role: had.win_mysql
+    - role: had.win_nodejs
+    - role: had.win_nssm
+    - role: had.win_python
+    - role: had.win_jenkins-master-add-node
+    - role: had.win_jenkins-worker
+# Post agent configuration
+    - role: share_test_folder
+    - role: open_firewall
+    - role: checkout_git_repo
+      vars:
+        source_url: "ssh://git@sourcecode01.de.bosch.com:7999/nrcsgen2/fml_development.git"
+        checkout_dir: "{{ jenkins_home }}\\0"
+        branch_name: "master"
+    - role: run_additional_commands
+    - role: restart_jenkins_service
+    - role: copy_jenkins_executor_directory

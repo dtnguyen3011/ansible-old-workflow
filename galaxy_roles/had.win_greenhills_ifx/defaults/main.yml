@@ -1,0 +1,4 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+greenhills_ifx_install_dir: C:\TCC\Tools\greenhills_ifx\comp_201815_5fp_WIN64

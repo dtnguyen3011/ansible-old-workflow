@@ -1,0 +1,29 @@
+@echo off
+:: Jenkins Swarm Client settings
+
+::  "Home Jenkins" (the one this node belongs to)
+set "SWHOME={{ jenkins_master.url.split('/')[-1] }}"
+
+:: actual address of the jenkins master (not the proxy)
+set "SWTARGET={{ jenkins_master.url }}"
+
+:: the target Jenkins' swarm user's name
+set "SWUSER={{ jenkins_master.api_user }}"
+
+:: the target Jenkins' swarm user's api key
+set "SWKEY={{ jenkins_master.api_key }}"
+
+:: labels string (may contain blanks)
+set "SWLABELS={{ jenkins_win_worker.labels }}"
+
+:: how many executors
+set "SWEXEC={{ jenkins_win_worker.executors }}"
+
+:: optional: Name Suffix
+set "SWNAME={{ ansible_nodename }}"
+
+:: optional: Node description (no HTML markup!)
+set "SWDESCR=ECU-TEST Node for VAG"
+
+:: optional: additional options for the Jenkins' swarm agent
+set "SWOPTIONS= -t "ECU-TEST=C:\Program Files\ECU-TEST 2020.2""

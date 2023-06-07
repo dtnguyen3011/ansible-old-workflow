@@ -1,0 +1,40 @@
+- name: "Setup temp folder for asap setup files"
+  win_file:
+    state: directory
+    path: "{{ win_asap_temp_dir }}"
+
+- name: "Create asap Program directory"
+  win_file:
+    state: directory
+    path: "{{ win_asap_install_dir }}"
+
+- name: "Download asap install file"
+  win_get_url:
+    url: "{{ win_asap_package_location }}{{ win_asap_package_version }}.zip"
+    dest: "{{ win_asap_temp_dir }}"
+  retries: 2
+  delay: 2
+  register: result
+  until: result is succeeded
+
+- name: "Unpack asap with zip"
+  win_unzip:
+    src: "{{ win_asap_temp_dir }}\\{{ win_asap_package_version }}.zip"
+    dest: "{{ win_asap_temp_dir }}"
+
+- debug:
+    msg: "Installing instance {{ new_instance }} with version {{ win_asap_package_version }} at dir '{{ win_asap_install_dir }}\\{{ win_asap_version_dir }}'"
+
+- name: "Install asap"
+  win_command: '"{{ win_asap_temp_dir }}\\{{ win_asap_package_version }}\\Setup.exe" /s /instance=default /v"/qn" /v"VPROGRAM_LANGUAGE=01" /v"REGKIND=2" /v"INSTALLDIR=\"{{ win_asap_install_dir }}\\{{ win_asap_version_dir }}\""'
+
+- name: "Update ASAP license"
+  win_copy:
+    src: "\\\\bosch.com\\dfsrb\\DfsDE\\DIV\\CS\\DE_CS$\\Prj\\DA\\Dev_Tools\\03_Common\\Cantools\\ASAP2_ToolSet\\LICENSE_FILE_JENKINS\\MCDrms.DLL"
+    dest: "{{ win_asap_install_dir }}\\{{ win_asap_version_dir }}\\Bin"
+    remote_src: true
+
+- name: "Cleanup temp download folder"
+  win_file:
+    state: absent
+    path: "{{ win_asap_temp_dir }}"

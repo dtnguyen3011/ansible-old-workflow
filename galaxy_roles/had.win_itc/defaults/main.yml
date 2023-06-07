@@ -1,0 +1,5 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_itc2_install_dir: C:\TCC\itc2
+win_itc2_force_install: false

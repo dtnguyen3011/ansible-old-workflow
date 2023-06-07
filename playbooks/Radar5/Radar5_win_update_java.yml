@@ -1,0 +1,36 @@
+---
+## this is the playbook for radar gen 5 node (BIAAS/server/win/linux)
+## Use for update action
+## HOW TO RUN :
+#
+# ansible-playbook playbooks/Radar5/Radar5_win_update_java.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_biaas_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update_java.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_server_static_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update_java.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_server_vmc_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update_java.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_ecu_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update_java.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=linux_biaas_agent,linux_static_agent"
+#
+##
+
+- name: "UPDATE java on nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: true
+  vars:
+    win_java:
+      jtype: open-jdk
+      jversion: 11.0.9.11
+      jupdate: java-11-openjdk-11.0.9.11-3.windows.redhat.x86_64.msi
+    win_java_install_dir: "C:\\Program Files\\RedHat\\java-11-openjdk-11.0.9-3"
+    win_java_force_install: true
+
+  tasks:
+    - include_tasks: update_tasks/java/biaas_win10.yml
+      vars:
+        service_name: BIaaSNG_Jenkins
+      when: ansible_os_family == "Windows" and group_name == "win_ssh_biaas_agent"
+    - include_tasks: update_tasks/java/static_winserver.yml
+      when: ansible_os_family == "Windows" and (group_name == "win_ssh_server_static_agent" or group_name == "win_ssh_server_vmc_agent")
+    - include_tasks: update_tasks/java/win_ecu_swarm.yml
+      when: ansible_os_family == "Windows" and group_name == "win_ssh_ecu_agent"
+
+    - include_tasks: update_tasks/java/linux.yml
+      when: ansible_os_family != "Windows"

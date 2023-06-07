@@ -1,0 +1,15 @@
+---
+sysuser:
+  name: rgs9abt
+  domain: de
+  pass: "{{ vault.rgs9abt.pass }}"
+  jenkins_api_key: "{{ vault.rgs9abt.jenkins_api_key }}"
+  ssh_key: "{{ vault.rgs9abt.ssh_key }}"
+  ssh_dir: "~/.ssh_rgs9abt"
+
+ansible_user: "{{ sysuser.name }}"
+#become_password: "{{ sysuser.pass }}"
+
+artifactory_user: "{{ sysuser.name }}"
+artifactory_user_password: "{{ sysuser.pass }}"
+artifactory_api_key: "{{ vault.rgs9abt.artifactory_api_key }}"

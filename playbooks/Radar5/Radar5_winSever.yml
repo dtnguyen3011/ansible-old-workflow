@@ -1,0 +1,105 @@
+---
+- name: "install roles on nodes"
+  hosts: win_winrm
+  gather_facts: false
+  vars:
+    win_java:
+      jtype: open-jdk
+      jversion: 1.8.0.275
+      jupdate: java-1.8.0-openjdk-1.8.0.275-1.b01.redhat.windows.x86_64.msi
+    win_java_install_dir: "C:\\Program Files\\RedHat\\java-1.8.0-openjdk-1.8.0.275-1"
+
+  roles:
+    - { role: had.win_curl, tags: ["win_curl","init"] }
+    - { role: had.win_7z, tags: ["win_7z","init"] }
+    - { role: had.win_firefox, tags: ["win_firefox","init"] }
+    - { role: had.win_notepad, tags: ["win_notepad","init"] }
+    - { role: had.win_canape, tags: ["win_canape","init"] }
+    - { role: had.win_tcc, tags: ["win_tcc","init"] }
+    - { role: had.win_template_biaas, tags: ["win_template_biaas" ] }
+    - { role: had.win_itc, tags: ["win_itc","init"] }
+    - { role: had.win_greenhills_ifx, tags: ["win_greenhills_ifx","init"] }
+    - { role: had.win_hawcc, tags: ["win_hawcc","init"] }
+    - { role: had.win_python_gen5, tags: ["win_python_gen5","init"] }
+    - { role: had.win_jenkins-worker, tags: ["win_jenkins-worker"] }
+    - { role: had.win_asap, tags: ["win_asap","init"] }
+    - { role: had.win_git, tags: ["win_git","init"] }
+
+
+  post_tasks:
+    # - name: "Initial clone ansible repo" # if repo already exist, it will lead to error, TODO: if repo exist please skip
+    #   win_shell: "git clone ssh://git@sourcecode01.de.bosch.com:7999/ra6/cx_ansible_infrastructure.git D:\\test_lu"
+    #   ignore_errors: True
+
+  # #   ##   clone vw repo   
+    - name: "Setup repo folder for repo checkout"
+      win_file:
+        state: directory
+        path: "D:\\JT\\ws\\"
+
+
+  #   ##   clone daimler repo  
+    - name: "Initial clone dai_r5plus_br223"
+      win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/dai_r5plus_br223_cpausdtr/dai_r5plus_br223.git dai_r5plus_br223@1"
+      args:
+        chdir: "D:\\JT\\ws\\"
+      ignore_errors: True
+
+    - name: "Initial checkout dai_r5plus_br223"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git reset --hard
+        - git clean -xffd
+        - git lfs pull
+        - git submodule sync --recursive
+        - git submodule update -f --init --recursive
+        - git submodule foreach --recursive git reset --hard HEAD
+        - git submodule foreach --recursive git clean -xffd
+        - git submodule foreach --recursive git lfs pull
+      args:
+        chdir: "D:\\JT\\ws\\dai_r5plus_br223@1"
+        
+    - name: "Initial clone VWrepo"
+      win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/pj_vwmqb37w/pj-vwmqb37w.git pj-vwmqb37w@1"
+      args:
+        chdir: "C:\\JT\\ws\\"
+      ignore_errors: True
+
+    - name: "Initial checkout vw"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git reset --hard
+        - git clean -xffd
+        - git lfs pull
+        - git submodule sync --recursive
+        - git submodule update -f --init --recursive
+        - git submodule foreach --recursive git reset --hard HEAD
+        - git submodule foreach --recursive git clean -xffd
+        - git submodule foreach --recursive git lfs pull
+      args:
+        chdir: "C:\\JT\\ws\\pj-vwmqb37w"
+
+    ##   clone commonrepo repo   
+    - name: "Initial clone commonrepo"
+      win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/vwag_e3/commonrepo.git commonrepo@1"
+      args:
+        chdir: "C:\\JT\\ws\\"
+      ignore_errors: True
+
+    - name: "Initial checkout commonrepo"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git reset --hard
+        - git clean -xffd
+        - git lfs pull
+        - git submodule sync --recursive
+        - git submodule update -f --init --recursive
+        - git submodule foreach --recursive git reset --hard HEAD
+        - git submodule foreach --recursive git clean -xffd
+        - git submodule foreach --recursive git lfs pull
+      args:
+        chdir: "C:\\JT\\ws\\commonrepo@1"
+

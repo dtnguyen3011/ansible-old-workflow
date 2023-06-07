@@ -1,0 +1,7 @@
+yamllint msys_bundle: mingw64/ssl/certs/ca-bundle
+ca_store: http://abtv55162.de.bosch.com:8084/doit-mirror/CA-certificates
+ca_dir: mingw64\etc\pki\ca-trust\source
+ca_list:
+  - Bosch-CA-DE
+  - Bosch-CA1-DE
+  - BoschInternetProxyCA2

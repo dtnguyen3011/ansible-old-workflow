@@ -1,0 +1,1 @@
+java -jar {{ win_jenkins_install_dir }}\\agent.jar -jnlpUrl {{ jenkins_master.url }}/computer/{{ jenkins_nodename }}/slave-agent.jnlp -secret {{ JNLP_SECRET.stdout | trim }} -workDir "{{ jenkins_home }}" -noCertificateCheck

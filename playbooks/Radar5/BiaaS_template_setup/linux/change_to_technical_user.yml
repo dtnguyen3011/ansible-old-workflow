@@ -1,0 +1,67 @@
+---
+- name: "Check {{ sysuser.name }} is contained in /etc/passwd"
+  shell: "grep -c {{ sysuser.name }} /etc/passwd"
+  register: user_count
+  ignore_errors: true
+
+- name: "Get {{ sysuser.name }} info"
+  shell: "getent passwd {{ sysuser.name }}"
+  register: user_info
+  when: user_count.stdout == "0"
+
+- name: "Add to /etc/passwd"
+  shell: "echo \"{{ user_info.stdout }}\" >> /etc/passwd"
+  become: yes
+  register: user_info
+  when: user_count.stdout == "0"
+
+- name: Check original config in /etc/rc.local
+  command:
+    cmd: grep -q "/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh &" /etc/rc.local
+  register: org_in_rc
+  changed_when: false
+  ignore_errors: true
+
+- name: "Change user to run BiaaS service if original config is existed"
+  lineinfile:
+    path: /etc/rc.local
+    regexp: '^/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh &'
+    line: "su {{ sysuser.name }} -l -c '/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh' &"
+  become: yes
+  register: update_status
+  when: not org_in_rc.failed # existed
+
+- name: "Change user to run BiaaS service if original config is NOT existed"
+  block:
+    - name: Check user config in /etc/rc.local
+      command:
+        cmd: grep -q "/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh' &" /etc/rc.local
+      register: user_in_rc
+      changed_when: false
+      ignore_errors: true
+
+    - name: "Change user to run BiaaS service"
+      lineinfile:
+        path: /etc/rc.local
+        search_string: "/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh"
+        line: "su {{ sysuser.name }} -l -c '/var/lib/BiaaS-NG-LinuxClient/connect_with_logging.sh' &"
+      become: yes
+      register: update_status
+      when: not user_in_rc.failed
+  when: org_in_rc.failed # NOT existed
+ 
+- name: "Clean old jenkins file"
+  shell: "{{ item }}"
+  become: yes
+  with_items:
+    - rm /var/lib/BiaaS-NG-LinuxClient/slave.jar
+    - rm -rf /var/jenkins/remoting
+    - rm -rf /var/jenkins/workspace
+    - chown {{ sysuser.name }} /var/jenkins
+    - chmod 755 /var/jenkins/
+  when: update_status is defined and update_status.changed == true
+
+- name: "Reboot"
+  reboot:
+  become: yes
+  when: (update_status is defined and update_status.changed == true) or (user_count.stdout == "0")

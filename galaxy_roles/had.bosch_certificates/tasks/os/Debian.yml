@@ -1,0 +1,19 @@
+- name: Ensure local certs directory exists
+  file:
+    state: directory
+    path: "{{ ca_cert_dir }}"
+  check_mode: false
+
+- name: "Download Bosch certificates to {{ ca_cert_dir }}"
+  get_url:
+    url: "{{ ca_store }}/{{ item }}.crt"
+    dest: "{{ ca_cert_dir }}"
+  with_items: "{{ ca_list }}"
+  become: true
+
+  # includes all certificates with a .crt extension found below /usr/local/share/ca-certificates
+- name: Update certificate index
+  command: /usr/sbin/update-ca-certificates
+  become: true
+  register: update_result
+  changed_when: update_result.stdout is not search("0 added, 0 removed")

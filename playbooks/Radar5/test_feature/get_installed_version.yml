@@ -1,0 +1,11 @@
+########
+# ansible-playbook playbooks/Radar5/test_feature/get_installed_version.yml -i inventory/ra5/inventory_Radar5.yml -l all --vault-id ~/.vaultId-Gen5 -e "group_name=win_ssh_server_static_agent"
+########
+---
+- name: "GET installed software and version"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+
+  tasks:
+    - include_tasks: services/telegraf.yml
+    - include_tasks: services/curl.yml

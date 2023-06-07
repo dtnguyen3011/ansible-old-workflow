@@ -1,0 +1,33 @@
+---
+jenkins_home: "/var/jenkins"
+jenkins_master:
+  url: "https://rb-jmaas.de.bosch.com/XC_DA_ParameterHandling"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_api_key }}"
+  ssh_credentialsId: jenkins_agent_ssh_key
+
+jenkins_worker:
+  description: "Paramify linux worker"
+  executors: 2
+  labels: "docker_build"
+
+
+# jenkins_user: "{{ sysuser.name }}"
+# jenkins_public_key: "{{ sysuser.ssh_pub_key }}"
+
+# win_jenkins_service:
+#   username: "{{ sysuser.domain }}\\{{ sysuser.name }}"
+#   password: "{{ sysuser.pass }}"
+
+
+
+# jenkins_home: "/var/jenkins"
+# jenkins_master:
+#   url: "https://rb-jmaas.de.bosch.com/DOIT_CI"
+#   api_user: "{{ sysuser.name }}"
+#   api_key: "some_key"
+#   ssh_credentialsId: "e2cdaa2a-d38b-4786-866d-f709cdcdb1fc"
+# jenkins_worker:
+#   description: "Some Description"
+#   executors: 2
+#   labels: "docker_build"

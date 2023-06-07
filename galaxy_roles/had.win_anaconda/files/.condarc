@@ -1,0 +1,31 @@
+channel_alias: https://anu9rng:AP6eY5xuhS1MqAdy5jedftw3ndQq7MHjXL8Rpb@rb-artifactory.bosch.com/artifactory/conda-virtual/
+
+default_channels:
+  - https://anu9rng:AP6eY5xuhS1MqAdy5jedftw3ndQq7MHjXL8Rpb@rb-artifactory.bosch.com/artifactory/anaconda-pkgs-remote/main
+  - https://anu9rng:AP6eY5xuhS1MqAdy5jedftw3ndQq7MHjXL8Rpb@rb-artifactory.bosch.com/artifactory/anaconda-pkgs-remote/r
+  - https://anu9rng:AP6eY5xuhS1MqAdy5jedftw3ndQq7MHjXL8Rpb@rb-artifactory.bosch.com/artifactory/anaconda-pkgs-remote/msys2
+  - bosch-ca-injected
+  - bosch-simconnect
+  - bosch-simconnect-vendored
+
+channels:
+  - defaults
+  - conda-forge
+#  - bosch-simconnect-deprecated
+
+create_default_packages:
+  - bosch-ca
+
+allow_other_channels: yes
+
+# anaconda_upload: no
+
+show_channel_urls: yes
+
+notify_outdated_conda: no
+
+# report_errors: no
+
+auto_update_conda: false
+
+ssl_verify: false

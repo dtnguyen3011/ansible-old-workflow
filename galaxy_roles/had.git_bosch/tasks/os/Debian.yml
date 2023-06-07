@@ -1,0 +1,12 @@
+- name: Install git packages
+  become: true
+  no_log: true
+  apt:
+    deb: "{{ item }}"
+    force: true
+    allow_unauthenticated: true
+  with_items:
+    - "http://abtv55162.de.bosch.com:8084/doit-mirror/git/debian/libpcre2-8-0_10.34-7_amd64.deb"
+    - "http://abtv55162.de.bosch.com:8084/doit-mirror/git/debian/git-man_2.25.0-1~ppa0~ubuntu16.04.1_all.deb"
+    - "http://abtv55162.de.bosch.com:8084/doit-mirror/git/debian/git_2.25.0-1~ppa0~ubuntu16.04.1_amd64.deb"
+    - "http://abtv55162.de.bosch.com:8084/doit-mirror/git/debian/git-lfs_2.8.0-4_amd64.deb"

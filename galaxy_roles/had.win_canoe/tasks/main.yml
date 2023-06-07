@@ -1,0 +1,58 @@
+- name: Import Server Manager for Desktop Experience Feature installation
+  win_shell: "Import-Module ServerManager"
+
+- name: Desktop Experience Feature
+  win_shell: "Install-WindowsFeature Desktop-Experience"
+  ignore_errors: true  # Desktop Feature cannot be installed anymore via powershell on Windows Server 2016
+
+- name: "Setup CANoe temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ canoe_temp_dir }}"
+
+- name: "Download CANoe package"
+  win_shell: "start-bitstransfer -source {{ canoe_package_location }} -destination {{ canoe_temp_dir }}\\CANoe_{{ canoe_version }}_64Bit.zip"
+  become: true
+  vars:
+    ansible_become: true
+    ansible_become_method: runas
+    ansible_become_user: SYSTEM
+  retries: 10
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack CANoe"
+  win_unzip:
+    src: "{{ canoe_temp_dir }}\\CANoe_{{ canoe_version }}_64Bit.zip"
+    dest: "{{ canoe_version }}"
+
+- name: "Install CANoe and its toolboxes"
+  win_package:
+    path: "{{ canoe_msi_paths_prefix }}\\{{ item.folder }}\\{{ item.msi_name }}"
+    product_id: "{{ item.product_id }}"
+    arguments: "{{ item.arguments_list }}"
+  loop: "{{ canoe_toolboxes }}"
+  when: canoe_toolboxes is defined
+
+- name: "Download Vector driver setup"
+  win_get_url:
+    url: "{{ canoe_driver_setup_location }}"
+    dest: "{{ canoe_install_dir }}\\Vector_Driver_Setup.zip"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unzip CANoe Driver setup"
+  win_unzip:
+    src: "{{ canoe_temp_dir }}\\Vector_Driver_Setup.zip"
+    dest: "{{ canoe_temp_dir }}\\Vector_Driver_Setup"
+
+- name: "Install Vector driver setup"
+  win_shell: "{{ canoe_temp_dir }}\\Vector_Driver_Setup\\Drivers\\setup.exe /s /i {{ drivers_installation_list }}"
+
+- name: "Cleanup CANoe temp download folder"
+  win_file:
+    state: absent
+    path: "{{ canoe_temp_dir }}"

@@ -1,0 +1,24 @@
+json:
+  name: "{{ ansible_nodename }}"
+  nodeDescription: "{{ jenkins_win_worker.description }}"
+  numExecutors: "{{ jenkins_win_worker.executors }}"
+  remoteFS: "{{ jenkins_home }}"
+  labelString: "Windows {{ jenkins_win_worker.labels }}"
+  mode: "EXCLUSIVE"
+  launcher:
+    stapler-class: "hudson.slaves.JNLPLauncher"
+    $class: "hudson.slaves.JNLPLauncher"
+    workDirSettings:
+      disabled: false
+      workDirPath: ""
+      internalDir: "remoting"
+      failIfWorkDirIsMissing: false
+    tunnel: ""
+    vmargs: ""
+  retentionStrategy:
+    stapler-class: "hudson.slaves.RetentionStrategy$Always"
+    $class: "hudson.slaves.RetentionStrategy$Always"
+  nodeProperties:
+    stapler-class-bag: "true"
+  type: "hudson.slaves.DumbSlave"
+  Jenkins-Crumb: "{{ JENKINS_CRUMB_RESP.crumb }}"

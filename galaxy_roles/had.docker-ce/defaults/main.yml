@@ -1,0 +1,15 @@
+dockerpy: false
+upgrade_docker: false
+default_docker_config:
+  storage-driver: devicemapper
+  log-level: info
+
+docker_version: "20.10.6"
+containerdio_version: "1.4.3"
+docker_scan_plugin_version: "0.8.0"
+
+docker_engine_type: ce
+
+docker_http_proxy:
+docker_https_proxy:
+docker_no_proxy:

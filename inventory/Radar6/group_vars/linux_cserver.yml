@@ -1,0 +1,16 @@
+ansible_user: rbadmin_app1
+
+jenkins_master:
+  url: "https://rb-jmaas.de.bosch.com/RA6"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_api_key}}"
+  ssh_credentialsId: jenkins_agent_ssh_key
+  update_config: true
+
+jenkins_agent_root: "/net/{{ ansible_hostname }}/fs0/jenkins"
+jenkins_agent_group_specific_labels: "cserver"
+
+default_docker_config:
+  storage-driver: overlay2
+  log-level: info
+  data-root: "{{ jenkins_agent_root }}/docker"

@@ -1,0 +1,18 @@
+- name: "Detect CANAPE is installed or not"
+  win_shell: Get-ItemProperty 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayName -like 'Vector CANape*SP*'} | Select-Object -ExpandProperty DisplayName
+  register: canape_status
+  ignore_errors: true
+
+- name: "Pre-check"
+  debug:
+    msg: "CANAPE already installed with version '{{ canape_status.stdout_lines[0] }}'. No need to run"
+  when: not win_canape_force_install and (canape_status.stdout | length > 0)
+
+- name: "DO INSTALL"
+  block:
+    - name: "Delete old version"
+      win_shell: (Get-WmiObject -Class Win32_Product -Filter "Name = '{{ canape_status.stdout_lines[0] }}'").Uninstall()
+      when: canape_status.stdout | length > 0
+
+    - include_tasks: install.yml
+  when: win_canape_force_install or (canape_status.stdout | length == 0)

@@ -1,0 +1,39 @@
+---
+## this is the playbook for radar gen 5 window server static node and cserver
+## Use for update action
+#
+# ansible-playbook playbooks/Radar5/Radar5_winserver_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_server_static_agent,win_ssh_server_vmc_agent"
+# ansible-playbook playbooks/Radar5/Radar5_winserver_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=abtsr050.de.bosch.com"
+# ansible-playbook playbooks/Radar5/Radar5_winserver_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=abtsr054.de.bosch.com,rngvmc0324.de.bosch.com"
+# ansible-playbook playbooks/Radar5/Radar5_winserver_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=si0vmc4322.de.bosch.com"
+# ansible-playbook playbooks/Radar5/Radar5_winserver_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=abtsr055.de.bosch.com,rngvmc0200.de.bosch.com"
+# ansible-playbook playbooks/Radar5/Radar5_winserver_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=rngvmc0147.de.bosch.com"
+# ansible-playbook playbooks/Radar5/Radar5_winserver_static_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=abtsr053.de.bosch.com"
+#
+##
+
+- name: "UPDATE new user on BIAAS nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+
+  tasks:
+    - name: "Add {{ sysuser.name }} allow rights"
+      win_acl:
+        path: "{{ jenkins_home }}"
+        user: "{{ sysuser.domain }}\\{{ sysuser.name }}"
+        rights: FullControl
+        type: allow
+        state: present
+      ignore_errors: true
+
+    - include_tasks: BiaaS_template_setup/win10/add_ssh_key.yml
+    - include_tasks: BiaaS_template_setup/win10/enable_config.yml
+
+    - include_tasks: update_tasks/static_winserver.yml
+      vars:
+        service_name: Jenkins_JNLP_worker
+        service_name_jet: Jenkins_JET_JNLP_worker
+
+    - name: "Reboot"
+      win_reboot:
+        reboot_timeout: 600

@@ -1,0 +1,30 @@
+---
+## this is the playbook for radar gen 5 template linux node.
+## Use for update action
+#
+# ansible-playbook playbooks/Radar5/Radar5_linux_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=rng-zeng09l002.rng.de.bosch.com"
+# ansible-playbook playbooks/Radar5/Radar5_linux_add_new_user.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=linux_biaas_agent"
+#
+##
+
+- name: "UPDATE new user on BIAAS linux nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: true
+  vars:
+    jenkins_home: "/var/jenkins/"
+
+  tasks:
+    - name: "Add {{ sysuser.name }} as owner of jenkins_home"
+      shell: "{{ item }}"
+      with_items:
+        - "chown {{ sysuser.name }}:{{ sysuser.name }} /opt/tools -R"
+        - "chown {{ sysuser.name }}:{{ sysuser.name }} /var/jenkins/ -R"
+      become: yes
+
+    - include_tasks: BiaaS_template_setup/linux/add_ssh_key.yml
+    - include_tasks: BiaaS_template_setup/linux/change_to_technical_user.yml
+    - include_tasks: BiaaS_template_setup/linux/enable_config.yml
+    - include_tasks: BiaaS_template_setup/linux/install_tool.yml
+    - include_tasks: BiaaS_template_setup/linux/mount_path.yml
+    - include_tasks: BiaaS_template_setup/linux/clone_repo.yml
+    - include_tasks: BiaaS_template_setup/linux/setup_ops_update_repo.yml

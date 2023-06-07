@@ -1,0 +1,5 @@
+anaconda_temp_dir: C:\temp\anaconda_install
+
+anaconda_supported_versions:
+  - { short_vers: "3.7-2019.03", anaconda_vers: "2019.03", python_vers: "3.7.3" }
+  - { short_vers: "3.7-2019.10", anaconda_vers: "2019.10", python_vers: "3.7.4" }

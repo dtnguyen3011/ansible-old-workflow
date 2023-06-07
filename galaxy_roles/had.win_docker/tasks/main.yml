@@ -1,0 +1,21 @@
+- name: Check the minimum Windows build number
+  include_tasks: check-build-number.yml
+  tags: check
+
+- name: Install Windows Containers and Hyper-V Windows Features (if not already present)
+  include_tasks: install-windows-container-features.yml
+  tags: dockerinstall
+
+- name: Install Docker on Windows (always the newest version) and pull needed base images
+  include_tasks: install-docker.yml
+  tags: dockerinstall
+
+- name: Install Docker Compose (also always the newest version)
+  include_tasks: install-docker-compose.yml
+  tags: dockerinstall
+
+- name: After fresh Docker installation we reboot our Windows - it´s Windows after all and after that Docker should be ready :) (mostly this step will fail, but it should work nevertheless)
+  win_reboot:
+    reboot_timeout_sec: 60
+    connect_timeout: 60
+  ignore_errors: true

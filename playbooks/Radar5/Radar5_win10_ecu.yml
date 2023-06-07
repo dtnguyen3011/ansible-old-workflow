@@ -1,0 +1,96 @@
+---
+## this is the playbook for radar gen 5 template node, or win 10 node.
+## 1. refer the wiki page and in stall the tooling from IT service portal: https://inside-docupedia.bosch.com/confluence/display/CCD/Set+up+BIaaS+Win10+template+VM
+## 2. once you got the ism tool or temperory admin, you can first add systemuser de\raa9lr in groups and roles on the node as admin right,
+##    so that the ansible can have access to install and addenviroment path in the system.
+## 3. according to the ansible remote agent installation readme, please run the powershell script to enable the openssh access of this remote node
+## 4. add your agent name in the inventory list and you can run this playbook.
+## Lu Jia(XC-DA/EAS3)  
+- name: "install roles on nodes"
+  hosts: win_ssh_ecu_agent
+  gather_facts: false
+  roles:
+    - { role: had.win_curl, tags: ["win_curl","init"] }
+    - { role: had.win_canape, tags: ["win_canape","init"] }
+    - { role: had.win_canoe, tags: ["win_canoe","init"] }
+    - { role: had.win_template_biaas, tags: ["win_template_biaas" ] }
+    - { role: had.win_itc, tags: ["win_itc","init"] }
+    - { role: had.win_greenhills_ifx, tags: ["win_greenhills_ifx","init"] }
+    - { role: had.win_hawcc, tags: ["win_hawcc","init"] }
+    - { role: had.win_python_gen5, tags: ["win_python_gen5","init"] }
+    - { role: had.win_git, tags: ["win_git","init"] }
+    - { role: had.win_telegraf, tags: ["win_telegraf","init"]}
+  post_tasks:
+    # - name: "Initial clone ansible repo" # if repo already exist, it will lead to error, TODO: if repo exist please skip
+    #   win_shell: "git clone ssh://git@sourcecode01.de.bosch.com:7999/ra6/cx_ansible_infrastructure.git D:\\test_lu"
+    #   ignore_errors: True
+
+  
+    - name: "Setup repo folder for repo checkout"
+      win_file:
+        state: directory
+        path: "C:\\JT\\ws\\"
+    ##   clone vw repo 
+    - name: "Initial clone VWrepo"
+      win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/pj_vwmqb37w/pj-vwmqb37w.git pj-vwmqb37w"
+      args:
+        chdir: "C:\\JT\\ws\\"
+      ignore_errors: True
+
+    - name: "Initial checkout vw"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git reset --hard
+        - git clean -xffd
+        - git lfs pull
+        - git submodule sync --recursive
+        - git submodule update -f --init --recursive
+        - git submodule foreach --recursive git reset --hard HEAD
+        - git submodule foreach --recursive git clean -xffd
+        - git submodule foreach --recursive git lfs pull
+      args:
+        chdir: "C:\\JT\\ws\\pj-vwmqb37w"
+
+    ##   clone commonrepo repo   
+    - name: "Initial clone commonrepo"
+      win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/vwag_e3/commonrepo.git commonrepo@1"
+      args:
+        chdir: "C:\\JT\\ws\\"
+      ignore_errors: True
+
+    - name: "Initial checkout commonrepo"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git reset --hard
+        - git clean -xffd
+        - git lfs pull
+        - git submodule sync --recursive
+        - git submodule update -f --init --recursive
+        - git submodule foreach --recursive git reset --hard HEAD
+        - git submodule foreach --recursive git clean -xffd
+        - git submodule foreach --recursive git lfs pull
+      args:
+        chdir: "C:\\JT\\ws\\commonrepo@1"
+    ##   clone daimler repo  
+    - name: "Initial clone dai_r5plus_br223"
+      win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/dai_r5plus_br223_cpausdtr/dai_r5plus_br223.git dai_r5plus_br223@1"
+      args:
+        chdir: "C:\\JT\\ws\\"
+      ignore_errors: True
+
+    - name: "Initial checkout dai_r5plus_br223"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git reset --hard
+        - git clean -xffd
+        - git lfs pull
+        - git submodule sync --recursive
+        - git submodule update -f --init --recursive
+        - git submodule foreach --recursive git reset --hard HEAD
+        - git submodule foreach --recursive git clean -xffd
+        - git submodule foreach --recursive git lfs pull
+      args:
+        chdir: "C:\\JT\\ws\\dai_r5plus_br223@1"

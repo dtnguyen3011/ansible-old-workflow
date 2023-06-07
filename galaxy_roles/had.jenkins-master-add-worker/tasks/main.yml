@@ -1,0 +1,87 @@
+- name: "Create jenkins home directory"
+  become: true
+  file:
+    path: "{{ jenkins_home }}"
+    state: directory
+    mode: '0755'
+
+- name: "Get CSRF crumbs from jenkins to authenticate"
+  no_log: true
+  uri:
+    url: "{{ jenkins_master.url }}/crumbIssuer/api/json"
+    method: "GET"
+    user: "{{ jenkins_master.api_user }}"
+    password: "{{ jenkins_master.api_key }}"
+    force_basic_auth: true
+    return_content: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    status_code:
+      - 200
+  register: JENKINS_CRUMB_RESP
+
+- name: Fail if CSRF crumbs are not available
+  fail:
+    msg: "CSRF crumbs from jenkins not available. Cannot proceed"
+  when:
+    - JENKINS_CRUMB_RESP["json"]["crumb"] is not defined
+
+- name: "Check if node already exists on master"
+  no_log: true
+  uri:
+    url: "{{ jenkins_master.url}}/computer/{{ ansible_fqdn }}"
+    method: "GET"
+    user: "{{ jenkins_master.api_user }}"
+    password: "{{ jenkins_master.api_key }}"
+    force_basic_auth: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    status_code:
+      - 200
+      - 404
+  register: JENKINS_SERVER_GET
+
+- name: Fail if node is already added to Jenkins master
+  fail:
+    msg: "Node already added to jenkins master. If jenkins_master.update_config is enabled, system settings will be overwritten."
+  when:
+    - JENKINS_SERVER_GET.status == 200
+    - not jenkins_master.update_config
+
+- name: "Update existing node in jenkins master"
+  no_log: true
+  uri:
+    url: "{{ jenkins_master.url }}/computer/{{ ansible_fqdn }}/configSubmit"
+    method: "POST"
+    user: "{{ jenkins_master.api_user }}"
+    password: "{{ jenkins_master.api_key }}"
+    force_basic_auth: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    body_format: form-urlencoded
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+      Jenkins-Crumb: "{{ JENKINS_CRUMB_RESP.json.crumb }}"
+    body:
+      - [json, "{{ json | to_json}}"]
+    status_code:
+      - 302
+  when:
+    - JENKINS_SERVER_GET.status == 200
+
+- name: "Add new node to Jenkins Master"
+  no_log: true
+  uri:
+    url: "{{ jenkins_master.url }}/computer/doCreateItem?name={{ ansible_fqdn }}&type=hudson.slaves.DumbSlave"
+    body_format: form-urlencoded
+    method: "POST"
+    user: "{{ jenkins_master.api_user }}"
+    password: "{{ jenkins_master.api_key }}"
+    force_basic_auth: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+      Jenkins-Crumb: "{{ JENKINS_CRUMB_RESP.json.crumb }}"
+    body:
+      - [json, "{{ json | to_json}}"]
+    status_code:
+      - 302
+  when:
+    - JENKINS_SERVER_GET.status == 404

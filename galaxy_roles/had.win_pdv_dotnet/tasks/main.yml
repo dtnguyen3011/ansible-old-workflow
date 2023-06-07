@@ -1,0 +1,13 @@
+- name: "Check dotnet.exe is installed or not"
+  win_stat:
+    path: "{{ win_pdv_dotnet_install_dir }}\\dotnet.exe"
+  register: stat_file
+  when: not win_pdv_dotnet_force_install
+
+- name: "Pre-check"
+  debug:
+    msg: "dotnet already installed. No need to run"
+  when: not win_pdv_dotnet_force_install and stat_file.stat.exists
+
+- include_tasks: install.yml
+  when: win_pdv_dotnet_force_install or not stat_file.stat.exists

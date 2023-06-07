@@ -1,0 +1,5 @@
+win_anaconda_version: "3.7-2019.03"
+win_anaconda_install_dir: "C:\\tools\\anaconda"
+win_anaconda_update_packages: true
+win_anaconda_do_install: false
+win_anaconda_user: "{{ ansible_user }}"

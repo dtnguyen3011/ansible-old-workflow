@@ -1,0 +1,48 @@
+- name: "Pre-check on win_java.jtype"
+  fail:
+    msg: "WRONG INPUT!!! <win_java.jtype> must be jre or open-jdk"
+  when: (win_java.jtype != "jre") and (win_java.jtype != "open-jdk")
+
+- name: "Init config for jre"
+  set_fact:
+    java_url: "http://abtv55162.de.bosch.com:8084/doit-mirror/JRE/{{ win_java.jversion }}/jre-{{ win_java.jupdate }}-windows-x64.exe"
+    java_installer: "{{ win_java_temp_dir }}\\jre-{{ win_java.jupdate }}-windows-x64.exe"
+    java_arguments: "/s INSTALLCFG={{ win_java_temp_dir }}\\jre_installer_config.cfg"
+  when: win_java.jtype == "jre"
+
+- name: "Init config for open-jdk"
+  set_fact:
+    java_url: "http://abtv55162.de.bosch.com:8084/doit-mirror/{{ win_java.jtype }}/win/{{ win_java.jversion }}/jdk/{{ win_java.jupdate }}"
+    java_installer: "{{ win_java_temp_dir }}\\{{ win_java.jupdate }}"
+    java_arguments: ""
+  when: win_java.jtype == "open-jdk"
+
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ win_java_temp_dir }}"
+
+- name: "Download Java base installer"
+  win_get_url:
+    url: "{{ java_url }}"
+    dest: "{{ java_installer }}"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Create the installer cfg file"
+  win_template:
+    src: jre_installer_config.cfg.j2
+    dest: "{{ win_java_temp_dir }}\\jre_installer_config.cfg"
+  when: win_java.jtype == "jre"
+
+- name: "Run Java Installer"
+  win_package:
+    path: "{{ java_installer }}"
+    arguments: "{{ java_arguments }}"
+
+- name: "Cleanup temp download folder"
+  win_file:
+    state: absent
+    path: "{{ win_java_temp_dir }}"

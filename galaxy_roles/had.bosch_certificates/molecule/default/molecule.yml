@@ -1,0 +1,44 @@
+scenario:
+  test_sequence:
+    - lint
+    - destroy
+    - syntax
+    - create
+    - converge
+    - idempotence
+    - verify
+    - destroy
+driver:
+  name: docker
+lint:
+  name: yamllint
+  options:
+    config-file: .yamllint
+platforms:
+  - name: "bosch_certificates${MOLECULE_INSTANCE_NAME_POSTFIX}"
+    image: "${DEB_PLATFORM_DOCKER_IMAGE}"
+    dockerfile: ../../resources/Dockerfile.j2
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      callback_whitelist: junit
+  env:
+    ANSIBLE_FORCE_COLOR: "False"
+    ANSIBLE_NOCOLOR: "True"
+    JUNIT_OUTPUT_DIR: "./provisioner_reports"
+    JUNIT_TASK_CLASS: "yes"
+    JUNIT_INCLUDE_SETUP_TASKS_IN_REPORT: "no"
+  lint:
+    name: ansible-lint
+    enabled: false
+    options:
+      c: ../../.ansible-lint
+verifier:
+  name: testinfra
+  options:
+    color: 'no'
+    junit-xml: tests/reports/testinfra.xml
+    v: 1
+  lint:
+    name: flake8

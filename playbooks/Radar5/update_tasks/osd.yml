@@ -1,0 +1,14 @@
+---
+- name: "Check smbcredentials file exists"
+  stat:
+    path: "/root/.smbcredentials"
+  become: true
+  register: stat_file
+
+- name: "Update smbcredentials"
+  lineinfile:
+    path: "/root/.smbcredentials"
+    regexp: '^password='
+    line: password={{ sysuser.pass }}
+  become: true
+  when: stat_file.stat.exists == True

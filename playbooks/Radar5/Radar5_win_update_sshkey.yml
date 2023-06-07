@@ -1,0 +1,20 @@
+---
+## this is the playbook for radar gen 5 template node and window node.
+## Use for update action
+#
+# ansible-playbook playbooks/Radar5/Radar5_win_update_sshkey.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_biaas_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update_sshkey.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_server_vmc_agent,win_ssh_server_static_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update_sshkey.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=linux_biaas_agent"
+#
+##
+
+- name: "UPDATE roles on nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: true
+
+  tasks:
+    - include_tasks: BiaaS_template_setup/win10/add_ssh_key.yml
+      when: ansible_os_family == "Windows"
+
+    - include_tasks: BiaaS_template_setup/linux/add_ssh_key.yml
+      when: ansible_os_family != "Windows"

@@ -1,0 +1,5 @@
+canoe_temp_dir: C:\temp\win_canoe_install
+canoe_package_location: http://abtv55162.de.bosch.com:8084/doit-mirror/CANoe/CANoe_{{ canoe_version }}_64bit.zip
+canoe_driver_setup_location: https://download.vector.com/drivers/Vector_Driver_Setup.zip
+product_id_CANoe_V12_SP2: "3558186A-ACCC-4ACE-A03C-369ACF4D0D35"
+product_id_CANoe_V11_SP3: "9E607810-015E-43EE-92A8-4C1F266E1805"

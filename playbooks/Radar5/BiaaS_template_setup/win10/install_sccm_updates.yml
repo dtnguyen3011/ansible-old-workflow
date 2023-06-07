@@ -1,0 +1,14 @@
+---
+- name: Install SCCM updates script
+  ansible.windows.win_powershell:
+    script: |
+      {{ install_sccm_script }}
+  register: install_sccm_output
+
+- debug:
+    msg: "{{ install_sccm_output.host_out.split('\n') }}"
+
+- name: Reboot if pending
+  win_reboot:
+    reboot_timeout: 1200
+  when: install_sccm_output.host_out.find('RebootPending') != -1

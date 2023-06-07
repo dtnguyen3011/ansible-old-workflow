@@ -1,0 +1,3 @@
+dependencies:
+  - role: had.java
+    src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.java

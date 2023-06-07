@@ -1,0 +1,58 @@
+- name: "Fail if docker is not available for OS version"
+  fail:
+    msg: "dockerce is only available for RedHat / CentOS 7!"
+  when: ansible_os_family != "RedHat" or ansible_distribution_major_version < '7'
+
+- name: "Ensure docker dependencies are installed"
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - ca-certificates
+    - yum-utils
+  become: true
+
+# This is recommended in the dockerce installation guide.
+# It is ok if a element is not present and issues need to be skipped
+- name: "Uninstall Docker older versions and Podman (if present)"
+  yum:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - podman
+    - docker
+    - docker-client
+    - docker-client-latest
+    - docker-common
+    - docker-latest
+    - docker-latest-logrotate
+    - docker-logrotate
+    - docker-engine
+  become: true
+
+- name: "Install dependencies"
+  yum:
+    name: "{{ item }}"
+    state: present
+  ignore_errors: true
+  loop: "{{ dependencies }}"
+  become: true
+
+- name: "Download Docker CE packages"
+  get_url:
+    url: "http://abtv55162.de.bosch.com:8084/doit-mirror/Docker/linux/\
+         {{ ansible_os_family | lower }}/\
+         {{ ansible_distribution_major_version }}/\
+         {{ item }}.rpm"
+    dest: "{{ dockerce_install_dir }}/{{ item }}.rpm"
+  loop: "{{ docker_installer_packages + docker_installer_dependent_packages }}"
+
+- name: "Install Docker CE packages"
+  shell: "yum localinstall -y \
+           {{ dockerce_install_dir }}/{{ containerd_package }}.rpm \
+           {{ dockerce_install_dir }}/docker-*.rpm"
+  become: true
+  check_mode: false
+  changed_when: false
+  args:
+    warn: false

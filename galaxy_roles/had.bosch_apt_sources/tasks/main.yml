@@ -1,0 +1,39 @@
+- name: Ensure absence of unnecessary ubuntu packages
+  become: true
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - unity-webapps-common
+    - ubuntu-software
+
+- name: Fail if distribution is not supported
+  fail:
+    msg: "Unsupported dist version {{ ansible_distribution_release }}"
+  when: ansible_distribution_release != "xenial"
+
+- name: Remove default package list
+  become: true
+  copy:
+    content: "# Original list was removed and backuped"
+    dest: /etc/apt/sources.list
+    backup: true
+
+- name: xenial-bosch key
+  become: true
+  apt_key:
+    url: http://fe0osd01.de.bosch.com/packages-4/osd2-repo.asc
+
+- name: xenial-bosch repo
+  become: true
+  apt_repository:
+    repo: "{{ item }}"
+    state: present
+  with_items:
+    - deb http://fe0osd01.de.bosch.com/ubuntu xenial main restricted universe
+    - deb http://fe0osd01.de.bosch.com/ubuntu xenial-updates main restricted universe
+    - deb http://fe0osd01.de.bosch.com/ubuntu xenial-security main restricted universe
+    - deb http://fe0osd01.de.bosch.com/ubuntu xenial-bosch main
+    - deb http://fe0osd01.de.bosch.com/ubuntu xenial-bosch-cert main
+    - deb http://fe0osd01.de.bosch.com/multiverse xenial multiverse
+    - deb http://fe0osd01.de.bosch.com/partner xenial partner

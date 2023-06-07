@@ -1,0 +1,2 @@
+var_7z_temp_dir: C:\temp\win_7z_install
+var_7z_package_location: "http://abtv55162.de.bosch.com:8084/doit-mirror/7z/{{ win_7z_version }}"

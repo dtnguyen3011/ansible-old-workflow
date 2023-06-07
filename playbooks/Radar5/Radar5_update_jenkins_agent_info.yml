@@ -1,0 +1,69 @@
+---
+- name: Handle Jenkins nodes information
+  hosts:
+    - win_ssh_server_static_agent
+    - win_ssh_server_vmc_agent
+#    - win_ssh_ecu_agent
+    - linux_static_agent
+
+  pre_tasks:
+    - name: "{{ ansible_hostname }} - Set jenkins_home_jet"
+      set_fact:
+        jenkins_home_jet: "{{ jenkins_home }}"
+      when: jenkins_home_jet is not defined
+    - name: "{{ ansible_hostname }} - Set jenkins_home_dev"
+      set_fact:
+        jenkins_home_dev: "{{ jenkins_home }}"
+      when: jenkins_home_dev is not defined
+    - name: "{{ ansible_hostname }} - Set jenkins_executors_jet"
+      set_fact:
+        jenkins_executors_jet: "{{ jenkins_executors }}"
+      when: jenkins_executors_jet is not defined
+    - name: "{{ ansible_hostname }} - Set jenkins_executors_dev"
+      set_fact:
+        jenkins_executors_dev: "{{ jenkins_executors }}"
+      when: jenkins_executors_dev is not defined
+    - name: "{{ ansible_hostname }} - Define vars based on jenkins_env"
+      set_fact:
+        jenkins_env_list: "{{ jenkins_env_list | default([]) + [item] }}"
+      loop:
+        - { 'Name': 'Jenkins',      'Jhome': "{{ jenkins_home }}",      'Jexecutors': "{{ jenkins_executors }}",      'JInfo': "{{ jenkins_master }}" }
+        - { 'Name': 'Jenkins_JET',  'Jhome': "{{ jenkins_home_jet }}",  'Jexecutors': "{{ jenkins_executors_jet }}",  'JInfo': "{{ jenkins_jet }}" }
+        - { 'Name': 'Jenkins_DEV',  'Jhome': "{{ jenkins_home_dev }}",  'Jexecutors': "{{ jenkins_executors_dev }}",  'JInfo': "{{ jenkins_dev }}" }
+      when: >-
+        (item.Name == "Jenkins" and "main" in jenkins_env) or
+        (item.Name == "Jenkins_JET" and "jet" in jenkins_env) or
+        (item.Name == "Jenkins_DEV" and "dev" in jenkins_env)
+    - name: Set jenkins description
+      set_fact:
+        jenkins_description: Connected and managed by ansible
+      when: jenkins_description is not defined
+  tasks:
+    - name: "{{ ansible_hostname }} - RUNNING on roles for Linux"
+      include_role:
+        name: had.jenkins-master-add-worker
+      with_items:
+        - "{{ jenkins_env_list }}"
+      vars:
+        jenkins_master: "{{ item.JInfo }}"
+        jenkins_home: "{{ item.Jhome }}"
+        jenkins_worker:
+          description: "{{ jenkins_description }}"
+          executors: "{{ item.Jexecutors }}"
+          labels: "{{ jenkins_labels }}"
+        ansible_fqdn: "{{ jenkins_node_name }}"
+      when: ansible_os_family != "Windows"
+
+    - name: "{{ ansible_hostname }} - RUNNING on roles for Win"
+      include_role:
+        name: had.win_jenkins-master-add-node
+      with_items:
+        - "{{ jenkins_env_list }}"
+      vars:
+        jenkins_master: "{{ item.JInfo }}"
+        jenkins_home: "{{ item.Jhome }}"
+        jenkins_win_worker:
+          description: "{{ jenkins_description }}"
+          executors: "{{ item.Jexecutors }}"
+          labels: "{{ jenkins_labels }}"
+      when: ansible_os_family == "Windows"

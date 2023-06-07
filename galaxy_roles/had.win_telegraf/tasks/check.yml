@@ -1,0 +1,8 @@
+- name: Check telegraf service
+  win_service:
+    name: "{{ win_telegraf_service_name }}"
+  register: telegraf_service
+
+- debug:
+    var: telegraf_service.state, telegraf_service.path
+  when: telegraf_service

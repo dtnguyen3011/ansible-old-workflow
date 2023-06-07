@@ -1,0 +1,7 @@
+- name: "Init param for force_install"
+  set_fact:
+    win_asap_uninstall_version: "{{ win_asap_package_version.split('_')[0][1:] }} {{ win_asap_package_version.split('_')[1] }}"
+  when: win_asap_action == "force_install"
+
+- name: "Remove ASAP version {{ win_asap_uninstall_version }}"
+  script: files/uninstall.ps1 "{{ win_asap_uninstall_version }}"

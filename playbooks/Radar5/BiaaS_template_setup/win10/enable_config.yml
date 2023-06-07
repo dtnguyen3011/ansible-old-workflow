@@ -1,0 +1,39 @@
+---
+- name: "Enable windows regedit"
+  win_regedit:
+    path: "{{ item.path }}"
+    name: "{{ item.name }}"
+    data: 1
+    type: dword
+  with_items:
+    - { path: 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem', name: "LongPathsEnabled" }
+    - { path: 'HKLM:\SOFTWARE\Microsoft\Command Processor', name: "DelayedExpansion" }
+    - { path: 'HKCU:\SOFTWARE\Microsoft\Command Processor', name: "DelayedExpansion" }
+
+- name: "Reset all git config"
+  win_command:
+    "git config --{{ item.scope }} --unset-all {{ item.name }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global }
+  ignore_errors: true
+
+- name: "Configure git"
+  win_command:
+    "git config --{{ item.scope }} --add {{ item.name }} {{ item.value }}"
+  with_items:
+    - { name: "core.longpaths", value: "true", scope: system }
+    - { name: "user.name", value: "\"{{ git_user_full_name }}\"", scope: global }
+    - { name: "user.email", value: "{{ git_user_email }}", scope: global }
+
+- name: "Create folder pip"
+  win_file:
+    state: directory
+    path: "C:\\ProgramData\\pip"
+
+- name: "Add pip.ini"
+  win_template:
+    dest: "C:\\ProgramData\\pip\\pip.ini"
+    src: ../templates/pip.ini.j2
+    force: false

@@ -1,0 +1,9 @@
+---
+- name: "Check network_share path"
+  win_stat:
+    path: \\abtvdfs1.de.bosch.com\ismdfs\ida\abt\SW_Build\Radar\SystemC\VW\VWMQB37w
+  register: network_share
+
+- debug:
+    msg: "!!! PATH cannot access , PLEASE email to BIAAS team {{ network_share }} to get access"
+  when: not network_share.stat.exists

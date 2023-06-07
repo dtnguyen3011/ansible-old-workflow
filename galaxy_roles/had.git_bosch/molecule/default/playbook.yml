@@ -1,0 +1,7 @@
+- name: Converge
+  hosts: all
+  vars:
+    jenkins_user: "{{ lookup('env', 'USERNAME') }}"
+    jenkins_user_password: "{{ lookup('env', 'PASSWORD') }}"
+  roles:
+    - role: had.git_bosch

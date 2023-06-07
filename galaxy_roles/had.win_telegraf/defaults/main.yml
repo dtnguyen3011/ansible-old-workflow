@@ -1,0 +1,2 @@
+win_telegraf_package_version: telegraf-1.18.2
+win_telegraf_dir: "C:\\TOOLS\\{{ win_telegraf_package_version }}"

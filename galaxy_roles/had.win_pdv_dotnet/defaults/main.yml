@@ -1,0 +1,6 @@
+win_pdv_dotnet_install_dir: C:\Program Files\dotnet
+win_pdv_dotnet_package_location: http://abtv55162.de.bosch.com:8084/doit-mirror/Microsoft/pdv_dotnet/
+win_pdv_dotnet_package_file: dotnet-runtime-3.1.16-win-x64.exe
+win_pdv_desktop_package_location: http://abtv55162.de.bosch.com:8084/doit-mirror/Microsoft/desktop_runtime/
+win_pdv_desktop_package_file: windowsdesktop-runtime-6.0.6-win-x64.exe
+win_pdv_dotnet_force_install: false

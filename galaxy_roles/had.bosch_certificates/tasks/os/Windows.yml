@@ -1,0 +1,45 @@
+- name: Ensure local certs directory exists
+  win_stat: path="{{ msys_dir }}\{{ ca_dir }}"
+  register: stat_file
+
+- name: Create directory structure
+  win_file:
+    path: "{{ msys_dir }}\\{{ ca_dir }}"
+    state: directory
+  when: stat_file.stat.exists
+
+- name: Download Bosch certificates
+  win_get_url:
+    url: "{{ ca_store }}/{{ item }}.crt"
+    dest: "{{ msys_dir }}\\{{ ca_dir }}"
+  with_items: "{{ ca_list }}"
+
+- name: Convert certificates to PEM format
+  win_command: >
+    {{ msys_dir }}\git-bash.exe -c "openssl x509
+    -in {{ msys_dir }}\{{ ca_dir }}\{{ item }}.crt
+    -out {{ msys_dir }}\{{ ca_dir}}\{{ item }}.pem -outform PEM"
+  with_items: "{{ ca_list }}"
+# "bash -c [command]" links to another version of git-bash.exe binary,
+# that's a reason to use direct link to 'git-bash.exe'.
+
+- name: Updating the system CA store
+  win_command: >
+    {{ msys_dir }}\git-bash.exe -c "/usr/bin/p11-kit extract
+    --format=openssl-bundle --filter=certificates --overwrite
+    --comment {{ msys_bundle }}.crt"
+# The last step provided instead of 'bash -c "update-ca-trust"',
+# because command tries to use incorrect "git-bash" and "p11-kit" binaries
+# and tries to update a wrong certificate.
+
+- name: Remove crt files
+  win_file:
+    path: "{{ msys_dir }}\\{{ ca_dir }}\\{{ item }}.crt"
+    state: absent
+  with_items: "{{ ca_list }}"
+
+- name: Remove pem files
+  win_file:
+    path: "{{ msys_dir }}\\{{ ca_dir }}\\{{ item }}.pem"
+    state: absent
+  with_items: "{{ ca_list }}"

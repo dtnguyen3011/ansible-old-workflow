@@ -1,0 +1,46 @@
+---
+- name: Handle Windows Jenkins nodes
+  hosts: win_jenkins
+  vars:
+    jenkins_win_worker:
+      description: Connected and managed by ansible
+      executors: "{{ jenkins_executors }}"
+      labels: "{{ jenkins_labels }}"
+    win_java:
+      jtype: open-jdk
+      jversion: 11.0.9.11
+      jupdate: java-11-openjdk-11.0.9.11-3.windows.redhat.x86_64.msi
+    win_java_install_dir: "C:\\Program Files\\RedHat\\java-11-openjdk-11.0.9-3"
+
+  pre_tasks:
+    - name: Get largest volume on machine
+      win_shell: (Get-Volume | Sort-Object "Size" -Descending | Select-object -First 1).DriveLetter
+      register: volume
+      changed_when: false
+      when: jenkins_home is not defined
+    - name: Set jenkins home directory
+      set_fact:
+        jenkins_home: "{{ volume.stdout | trim }}:\\JT"
+      when: jenkins_home is not defined
+    - name: Set jenkins executors
+      set_fact:
+        jenkins_executors: 1
+      when: jenkins_executors is not defined
+    - name: Set jenkins labels
+      set_fact:
+        jenkins_labels: {{ ansible_nodename.split('.')[0] }}
+      when: jenkins_labels is not defined
+    - name: Set jenkins name
+      set_fact:
+        ansible_nodename: "{{ jenkins_name }}"
+      when: jenkins_name is defined
+    - name: debug mode
+      debug:
+        msg: "jenkins_name - {{ ansible_nodename }} , jenkins_home - {{ jenkins_home }} with jenkins_executors - {{ jenkins_win_worker.executors }} and Label - {{ jenkins_win_worker.labels }}"
+
+  roles:
+    - { role: had.win_jenkins-worker, tags: ["win_jenkins-worker"], when: jenkins_connector is not defined or jenkins_connector != "swarm"}
+
+  post_tasks:
+    - include_tasks: ecu_setup/win10/swarm.yml
+      when: (jenkins_connector is defined) and (jenkins_connector == "swarm")

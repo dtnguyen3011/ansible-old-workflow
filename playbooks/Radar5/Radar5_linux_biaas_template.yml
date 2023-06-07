@@ -1,0 +1,14 @@
+---
+- name: "install roles on nodes"
+  hosts: linux_biaas_agent
+  gather_facts: true
+  strategy: free
+
+  post_tasks:
+    - include_tasks: BiaaS_template_setup/linux/add_ssh_key.yml
+    - include_tasks: BiaaS_template_setup/linux/change_to_technical_user.yml
+    - include_tasks: BiaaS_template_setup/linux/enable_config.yml
+    - include_tasks: BiaaS_template_setup/linux/install_tool.yml
+    - include_tasks: BiaaS_template_setup/linux/mount_path.yml
+    - include_tasks: BiaaS_template_setup/linux/clone_repo.yml
+    - include_tasks: BiaaS_template_setup/linux/setup_ops_update_repo.yml

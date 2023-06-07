@@ -1,0 +1,20 @@
+---
+#- import_playbook: get_secrets.yml
+
+- name: "Ping Jenkins WINDOWS agents"
+  hosts:
+    - win_jenkins_agent
+  gather_facts: false
+
+  tasks:
+    - name: Ping Windows
+      ansible.builtin.win_ping:
+
+- name: "Ping Jenkins LINUX agents"
+  hosts:
+    - linux_jenkins
+  gather_facts: false
+
+  tasks:
+    - name: Ping Linux
+      ansible.builtin.ping:

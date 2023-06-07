@@ -1,0 +1,12 @@
+- name: reload unit
+  become: true
+  systemd:
+    daemon_reload: true
+  when:
+    - ansible_service_mgr == "systemd"
+
+- name: restart docker
+  become: true
+  service:
+    name: docker
+    state: restarted

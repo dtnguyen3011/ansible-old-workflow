@@ -1,0 +1,72 @@
+PROJECT:
+  children:
+    win:
+      children:
+        win_winserver: # machines using WinRM for connection (Win Server)
+          children:
+            win_winserver_jenkins:
+              children:
+                win_winserver_jenkins_agent_prod:
+                  hosts:
+                    SI0VMC12345.de.bosch.com:
+
+                win_winserver_jenkins_agent_test:
+                  hosts:
+                    FE0VM12345.de.bosch.com:
+
+        win_win10: # machines using ssh for connection (Win 10)
+          children:
+            win_win10_jenkins:
+              children:
+                win_win10_jenkins_agent_prod:
+                win_win10_jenkins_agent_test:
+
+        # combining both windows connection types in single group
+        win_jenkins:
+          children:
+            win_jenkins_agent: # combining groups by referencing the previously defined groups
+              children:
+                win_jenkins_agent_prod:
+                  children:
+                    win_winserver_jenkins_agent_prod:
+                    win_win10_jenkins_agent_prod:
+                win_jenkins_agent_test:
+                  children:
+                    win_winserver_jenkins_agent_test:
+                    win_win10_jenkins_agent_test:
+
+
+    linux:
+      children:
+        # linux cServers require some special rbadmin_app1 user for which you can get the credentials using rb-pam
+        # on windows cServers you can use the system user with admin access which was chosen when ordering the machine
+        linux_cserver:
+          children:
+            # add new linux c-servers to the linux_cserver_jenkins_bootstrap group for an initial setup 
+            # the initial setup uses the rb-pam proxy to setup key-based auth for the  rbadmin_app1 user
+            # Afterwards the machine(s) are moved to the correct group and use a ssh-key for connection instead of the proxy
+            linux_cserver_jenkins_bootstrap:
+              hosts:
+            linux_cserver_jenkins_agent_prod:
+              hosts:
+                FE0VM12345.de.bosch.com:
+            linux_cserver_jenkins_agent_test:
+              hosts:
+                FE0VM12345.de.bosch.com:
+
+        # combining jenkins agents in single group by referencing previously defined groups
+        linux_jenkins:
+          children:
+            linux_jenkins_prod:
+              children:
+                linux_jenkins_agent_prod:
+                linux_cserver_jenkins_agent_prod:
+            linux_jenkins_test:
+              children:
+                linux_jenkins_agent_test:
+                linux_cserver_jenkins_agent_test:
+
+    jenkins:
+      children:
+        linux_jenkins:
+        win_jenkins:

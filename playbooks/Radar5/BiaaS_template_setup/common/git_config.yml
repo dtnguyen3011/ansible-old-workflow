@@ -1,0 +1,20 @@
+---
+# This playbook just only running on AWX: http://abts55144.de.bosch.com:8000/#/templates/job_template/63/details
+
+- hosts: all
+  vars:
+    - git_config:
+      - git config --global user.name "Radar Gen5 system-user-CC (XC-DX/EAS2)"
+      - git config --global user.email system-user-cc.radargen5@bcn.bosch.com
+  tasks:
+  - name: "Git config global user for Windows template"
+    win_shell: "{{ item }}"
+    with_items:
+      - "{{ git_config }}"
+    when: ansible_facts['os_family'] == "Windows"
+
+  - name: "Git config global user for Linux template"
+    shell: "{{ item }}"
+    with_items:
+      - "{{ git_config }}"
+    when: ansible_facts['distribution'] ==  "Ubuntu" or ansible_facts['distribution'] == "CentOS" or ansible_facts['distribution'] == "Debian"

@@ -1,0 +1,9 @@
+---
+# variables valid for all Windows machines
+
+ansible_user: "{{ sysuser.domain }}\\{{ sysuser.name }}"  # already set in all but specifying it here again to have user and password at one location
+ansible_password: "{{ sysuser.pass }}"  # when using windows clients with openSSH this requires the 'sshpass' package to be installed
+ansible_shell_type: powershell
+
+
+win_git_lfs_install: yes

@@ -1,0 +1,23 @@
+---
+sysuser:
+  name: ptf6fe
+  domain: de
+  pass: "{{ vault.ptf6fe.pass }}"
+  jenkins_api_key: "{{ vault.ptf6fe.jenkins_api_key }}"
+  ssh_key: "{{ vault.ptf6fe.ssh_key }}"
+  ssh_dir: "~/.ssh_ptf6fe"
+  ssh_pub_key: "{{ lookup('file', '~/.ssh_ptf6fe/jenkinsAgent_rsa.pub') }}"
+
+# two ssh keys:
+#  - .ssh_ptf6fe/id_rsa:
+#      -> public key:  bitbucket
+#      -> private key:
+#  - .ssh_ptf6fe/jenkinsAgent_rsa for jenkins access
+#      -> public key: sysuser.ssh_pub_key
+#      -> private key: jenkins/jenkins_agent_ssh_key
+
+ansible_user: "{{ sysuser.name }}"
+#become_password: "{{ sysuser.pass }}"
+
+artifactory_user: "{{ sysuser.name }}"
+artifactory_user_password: "{{ sysuser.pass }}"

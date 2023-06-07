@@ -1,0 +1,7 @@
+---
+- name: Check service telegraf
+  win_service:
+    name: "telegraf"
+  register: telegraf_status
+- debug:
+    var: telegraf_status

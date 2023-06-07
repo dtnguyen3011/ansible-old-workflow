@@ -1,0 +1,67 @@
+- name: Get installed packages for conflict checks
+  package_facts:
+    manager: auto
+
+# Check if 'runc' container engine is installed, as it conflicts
+# with 'containerd' engine which is used to run Docker.
+# On RHEL 'runc' comes with 'podman' package, so 'podman' package is
+# checked and removed in RHEL OS specific tasks.
+# TODO: check and remove 'podman' in Debian OS specific tasks
+- name: "Fail if runc is installed on Ubuntu/Debian"
+  fail:
+    msg: "Conflicting package runc is installed. Cannot install docker-ce"
+  when: "'runc' in ansible_facts.packages"
+
+- name: ensure docker dependencies are installed
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+  become: true
+  check_mode: false
+
+# This is recommended in the dockerce installation guide.
+# It is ok if a element is not present and issues need to be skipped
+- name: "Uninstall Docker older versions (if present)"
+  apt:
+    name: "{{ item }}"
+    state: absent
+  ignore_errors: true
+  loop:
+    - docker
+    - docker-client
+    - docker-ce
+    - docker-ce-cli
+    - docker-client-latest
+    - docker-common
+    - docker-latest
+    - docker-latest-logrotate
+    - docker-logrotate
+    - docker-engine
+  become: true
+
+- name: "Install dependencies"
+  apt:
+    name: "{{ item }}"
+    state: present
+  ignore_errors: true
+  loop: "{{ dependencies }}"
+  become: true
+
+- name: "Download Docker CE packages"
+  get_url:
+    url: "http://abtv55162.de.bosch.com:8084/doit-mirror/Docker/linux/{{ ansible_distribution | lower }}/{{ ansible_lsb.codename }}/{{ item }}.deb"
+    dest: "{{ dockerce_install_dir }}/{{ item }}.deb"
+  loop: "{{ docker_installer_packages + docker_installer_dependent_packages }}"
+
+- name: "Install Docker CE packages"
+  shell: "apt install -y \
+           {{ dockerce_install_dir }}/{{ containerd_package }}.deb \
+           {{ dockerce_install_dir }}/docker-*.deb"
+  become: true
+  check_mode: false
+  changed_when: false
+  args:
+    warn: false

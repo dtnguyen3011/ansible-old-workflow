@@ -1,0 +1,15 @@
+- name: Set Java package name
+  set_fact:
+    java_package_name: "{{ java.package.debian | default('openjdk-8-jre') }}"
+  when: ansible_os_family == "Debian"
+
+- name: Set Java package name
+  set_fact:
+    java_package_name: "{{ java.package.centos | default('java-1.8.0-openjdk') }}"
+  when: ansible_os_family == "RedHat"
+
+- name: "Install latest OpenJDK Java 8 JDK"
+  package:
+    name: "{{ java_package_name }}"
+    state: present
+  become: true

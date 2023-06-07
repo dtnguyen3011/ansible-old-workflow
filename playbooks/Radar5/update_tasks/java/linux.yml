@@ -1,0 +1,34 @@
+---
+####
+## this is the playbook for radar gen 5 linux node (included BIAAS).
+####
+- name: "{{ ansible_hostname }} - Install required tools on Debian"
+  apt:
+    name: "{{ item }}"
+    state: present
+    force_apt_get: yes
+  become: yes
+  with_items:
+    - openjdk-11-jdk
+  when: ansible_os_family == "Debian"
+
+# Update java in Redhat needs to alternatives --config for both java and javac
+- name: "{{ ansible_hostname }} - Install required tools on Redhat"
+  yum:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  with_items:
+    - java-11-openjdk
+    - java-11-openjdk-devel
+  when: ansible_os_family == "RedHat"
+
+- debug:
+    msg: "PLEASE manually update java config on any agent computer by alternatives --config"
+  when: ansible_os_family == "RedHat"
+
+- name: "{{ ansible_hostname }} - Debian Reboot"
+  reboot:
+    reboot_timeout: 1200
+  become: yes
+  when: ansible_os_family == "Debian"

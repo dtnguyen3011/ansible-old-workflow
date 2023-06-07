@@ -1,0 +1,22 @@
+---
+- name: "install roles on nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+  roles:
+    - { role: had.win_git, tags: ["win_git","init"] }
+    - { role: had.win_7z, tags: ["win_7z","init"] }
+    - { role: had.win_notepad, tags: ["win_notepad","init"] }
+    - { role: had.win_tcc, tags: ["win_tcc","init"] }
+    - { role: had.win_itc, tags: ["win_itc","init"] }
+    - { role: had.win_curl, tags: ["win_curl","init"] }
+    - { role: had.win_firefox, tags: ["win_firefox","init"] }
+    - { role: had.win_telegraf, tags: ["win_telegraf","init"]}
+
+  post_tasks:
+    - include_tasks: BiaaS_template_setup/winServer/clone_repo_pr_check.yml
+    - include_tasks: BiaaS_template_setup/win10/enable_long_path.yml
+    - include_tasks: BiaaS_template_setup/winServer/enable_delayed_expansion.yml
+    - include_tasks: BiaaS_template_setup/win10/add_python3_for_mtupdate.yml
+    - include_tasks: BiaaS_template_setup/win10/add_env.yml
+    - include_tasks: BiaaS_template_setup/win10/check_share_path.yml
+    - include_tasks: BiaaS_template_setup/win10/update_tcc_itc2.yml

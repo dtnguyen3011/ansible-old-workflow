@@ -1,0 +1,15 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_java:
+  jtype: jre
+  jversion: jre8
+  jupdate: 8u201
+win_java_install_dir: "C:\\Program Files\\Java\\jre1.8.0"
+win_java_force_install: false
+
+# win_java:
+#   jtype: open-jdk
+#   jversion: 1.8.0.275
+#   jupdate: java-1.8.0-openjdk-1.8.0.275-1.b01.redhat.windows.x86_64.msi
+# win_java_install_dir: "C:\\Program Files\\RedHat\\java-1.8.0-openjdk-1.8.0.275-1"

@@ -1,0 +1,43 @@
+---
+- name: "Install required tools on Debian"
+  apt:
+    name: "{{ item }}"
+    state: present
+    force_apt_get: yes
+  become: yes
+  with_items:
+    - python3-pip
+    - python3-virtualenv
+    - virtualenv
+    - git-all
+    - git-lfs
+    - openjdk-11-jdk
+  when: ansible_os_family == "Debian"
+
+# Update java in Redhat needs to alternatives --config for both java and javac
+- name: "Install required tools on Redhat"
+  yum:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  with_items:
+    - python3-pip
+    - python3-virtualenv
+    - git-all
+    - git-lfs
+    - java-11-openjdk
+    - java-11-openjdk-devel
+  when: ansible_os_family == "RedHat"
+
+- name: "Execute command with sudo"
+  shell: "{{ item }}"
+  become: yes
+  with_items:
+    - groupadd docker
+    - usermod -aG docker {{ sysuser.name }}
+  ignore_errors: true
+
+- name: "Reboot"
+  reboot:
+    reboot_timeout: 1200
+  become: yes

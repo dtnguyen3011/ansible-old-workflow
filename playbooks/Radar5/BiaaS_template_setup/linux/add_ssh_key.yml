@@ -1,0 +1,21 @@
+---
+- name: "Add .ssh directory"
+  file:
+    path: "/home/{{ git_user }}/.ssh"
+    state: directory
+
+- name: "Add private key for user {{ git_user }}"
+  template:
+    dest: "/home/{{ git_user }}/.ssh/id_rsa"
+    src: ../templates/id_rsa.j2
+    mode: '0600'
+
+- name: "Add public key for user {{ git_user }}"
+  template:
+    dest: "/home/{{ git_user }}/.ssh/id_rsa.pub"
+    src: ../templates/id_rsa.pub.j2
+
+- name: "Add known_hosts for user {{ git_user }}"
+  template:
+    dest: "/home/{{ git_user }}/.ssh/known_hosts"
+    src: ../templates/known_hosts.j2

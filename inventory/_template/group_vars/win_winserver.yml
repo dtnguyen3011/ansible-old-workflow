@@ -1,0 +1,11 @@
+---
+# Windows server hosts use WinRM
+# For WinRM to work the following variables need to be set
+
+# ansible_user and ansible_password required for WinRM. Both are defined already elsewhere
+
+ansible_connection: winrm
+ansible_winrm_transport: ntlm
+ansible_winrm_server_cert_validation: ignore
+ansible_port: 5985 # http
+# ansible_port: 5986 # (default) https, seems not to work in some cases

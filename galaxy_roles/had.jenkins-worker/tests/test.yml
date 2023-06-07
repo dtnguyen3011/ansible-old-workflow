@@ -1,0 +1,23 @@
+- hosts: testservers
+  vars:
+    jenkins_public_key_file: "{{ playbook_dir }}/jenkins-worker-key.pub"
+
+  pre_tasks:
+
+    - debug:
+        msg: "Pubkey file: {{ jenkins_public_key_file }}"
+
+    # Load public key
+    - name: Check if public key exists
+      stat:
+        path: "{{ jenkins_public_key_file }}"
+      register: stat_jenkins_public_key
+      when: jenkins_public_key is not defined
+
+    - name: Set Jenkins public key variable
+      set_fact:
+        jenkins_public_key: "{{ lookup('file', jenkins_public_key_file) }}"
+        when: jenkins_public_key is not defined and stat_jenkins_public_key.stat.exists
+
+  roles:
+    - jenkins-worker

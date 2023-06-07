@@ -1,0 +1,37 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ t32_gen5_temp_dir }}"
+
+- name: "Download t32_gen5 package"
+  win_shell: "start-bitstransfer -source {{ t32_gen5_package_location }} -destination {{ t32_gen5_temp_dir }}\\t32_gen5.zip"
+  become: true
+  vars:
+    ansible_become: true
+    ansible_become_method: runas
+    ansible_become_user: SYSTEM
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack t32_gen5"
+  win_unzip:
+    src: "{{ t32_gen5_temp_dir }}\\t32_gen5.zip"
+    dest: "C:\\"
+    creates: "{{ t32_gen5_install_dir }}"
+
+- name: "Add t32_gen5 to PATH"
+  win_path:
+    elements:
+      - "{{ t32_gen5_install_dir }}"
+
+- name: "Add optional t32_gen5 tools to PATH"
+  win_path:
+    elements: "{{ t32_gen5_additional_path_tools }}"
+  when: t32_gen5_additional_path_tools is defined
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ t32_gen5_temp_dir }}"

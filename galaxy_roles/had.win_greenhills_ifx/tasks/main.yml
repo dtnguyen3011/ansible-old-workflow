@@ -1,0 +1,29 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ greenhills_ifx_temp_dir }}"
+
+- name: "Download greenhills_ifx package"
+  win_get_url:
+    url: "{{ greenhills_ifx_package_location }}"
+    dest: "{{ greenhills_ifx_temp_dir }}\\comp_201815_4fp_WIN64.zip"
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack greenhills_ifx"
+  win_unzip:
+    src: "{{ greenhills_ifx_temp_dir }}\\comp_201815_4fp_WIN64.zip"
+    dest: "{{ greenhills_ifx_install_dir }}"
+    creates: "{{ greenhills_ifx_install_dir }}"
+
+- name: "Add greenhills_ifx to PATH"
+  win_path:
+    elements:
+      - "{{ greenhills_ifx_install_dir }}"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ greenhills_ifx_temp_dir }}"

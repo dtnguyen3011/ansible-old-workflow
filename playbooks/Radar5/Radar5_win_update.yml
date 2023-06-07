@@ -1,0 +1,47 @@
+---
+## this is the playbook for radar gen 5 template node and window node.
+## Use for update action
+#
+# ansible-playbook playbooks/Radar5/Radar5_win_update.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_server_vmc_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_server_static_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_ecu_agent"
+# ansible-playbook playbooks/Radar5/Radar5_win_update.yml --vault-id ~/.vaultId-Gen5 -i inventory/ra5/inventory_Radar5.yml -e "group_name=win_ssh_biaas_agent"
+#
+##
+
+- name: "UPDATE roles on nodes"
+  hosts: "{{ group_name }}"
+  gather_facts: false
+  roles:
+    - { role: had.win_curl, tags: ["win_curl","init"] }
+    # - { role: had.win_curl, tags: ["win_curl","init"], win_curl_force_install: "true" }
+
+  tasks:
+  - name: "DELETE Window PATH environment"
+    win_path:
+      elements:
+      - '%SYSTEMROOT%'
+      - '%SYSTEMROOT%\system32'
+      - '%SYSTEMROOT%\System32\Wbem'
+      - '%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\'
+      - '%SYSTEMROOT%\System32\OpenSSH\'
+      - 'C:\WINDOWS'
+      - 'C:\WINDOWS\system32'
+      - 'C:\WINDOWS\System32\Wbem'
+      - 'C:\WINDOWS\System32\WindowsPowerShell\v1.0\'
+      - 'C:\WINDOWS\System32\OpenSSH\'
+      - 'C:\Program Files\Git\usr\bin'
+      - 'C:\tools\curl-7.82.0-win64-mingw\bin'
+      - 'C:\TOOLS\curl-7.63.0-win64-mingw\bin'
+      - 'C:\TCC\Tools\curl\7.58.0_WIN64\bin'
+      - 'C:\TOOLS\curl\bin'
+      state: absent
+  - name: "Move Window PATH environment to bottom"
+    win_path:
+      elements:
+      - '%SYSTEMROOT%'
+      - '%SYSTEMROOT%\system32'
+      - '%SYSTEMROOT%\System32\Wbem'
+      - '%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\'
+      - '%SYSTEMROOT%\System32\OpenSSH\'
+      - 'C:\Program Files\Git\usr\bin'

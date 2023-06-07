@@ -1,0 +1,3 @@
+jenkins_nodename: "{{ ansible_nodename }}"
+win_jenkins_install_dir: "C:\\\\tools\\\\Jenkins"
+win_jenkins_service_name: "Jenkins_JNLP_worker"

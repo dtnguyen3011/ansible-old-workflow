@@ -1,0 +1,39 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ python_temp_dir }}"
+
+- name: "Download python package"
+  win_get_url:
+    url: "{{ python_package_location }}"
+    dest: "{{ python_temp_dir }}\\python.msi"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Install python msi"
+  win_package:
+    path: "{{ python_temp_dir }}\\python.msi"
+
+- name: "Get all occurences of python"
+  win_command: where python
+  register: PYTHON_PATHS
+  ignore_errors: true
+
+- name: "Remove all occurences of python from the PATH variable"
+  win_path:
+    elements: "{{ item | replace('\\python.exe', '') }}"
+    state: absent
+  loop: "{{ PYTHON_PATHS.stdout_lines }}"
+  when: PYTHON_PATHS is defined
+
+- name: "Add python to PATH"
+  win_path:
+    elements:
+      - "{{ win_python_install_dir }}"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ python_temp_dir }}"

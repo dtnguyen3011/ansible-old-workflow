@@ -1,0 +1,30 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ var_notepad_temp_dir }}"
+
+- name: "Download notepad package"
+  win_get_url:
+    url: "{{ var_notepad_package_location }}/{{ win_notepad_package_name }}"
+    dest: "{{ var_notepad_temp_dir }}\\{{ win_notepad_package_name }}"
+  retries: 2
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Install notepad"
+  win_package:
+    path: "{{ var_notepad_temp_dir }}\\{{ win_notepad_package_name }}"
+    creates_path: "{{ win_notepad_install_dir }}"
+    arguments:
+      - /S
+
+- name: "Add notepad to PATH"
+  win_path:
+    elements:
+      - "{{ win_notepad_install_dir }}"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ var_notepad_temp_dir }}"

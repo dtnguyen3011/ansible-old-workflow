@@ -1,0 +1,27 @@
+---
+- name: Add runtime user to "Log on as a service" policiy
+  win_user_right:
+    name: SeServiceLogonRight
+    users:
+      - "{{ win_jenkins_service.username }}"
+    action: add
+  ignore_errors: true
+
+- name: "Setup Service logon"
+  win_service:
+    name: "{{ service_name }}"
+    state: restarted
+    username: "{{ win_jenkins_service.username }}"
+    password: "{{ win_jenkins_service.password }}"
+    update_password: always
+
+- name: "Check _netrc file exists"
+  win_stat:
+    path: "C:\\Users\\{{ sysuser.name }}\\_netrc"
+  register: stat_file
+
+- name: "Update if _netrc exists"
+  win_template:
+    dest: "C:\\Users\\{{ sysuser.name }}\\_netrc"
+    src: _netrc.j2
+  when: stat_file.stat.exists == True

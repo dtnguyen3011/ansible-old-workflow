@@ -1,0 +1,28 @@
+---
+- name: "Setup repo folder for repo checkout"
+  file:
+    path: "/var/jenkins/ws/commonrepo@1/"
+    state: directory
+    mode: '0775'
+    owner: "{{ sysuser.name }}"
+
+- name: "Initial clone commonrepo"
+  shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/vwag_e3/commonrepo.git repo"
+  args:
+    chdir: "/var/jenkins/ws/commonrepo@1/"
+  ignore_errors: True
+
+- name: "Initial checkout commonrepo"
+  shell: "{{ item }}"
+  with_items:
+    - git checkout
+    - git reset --hard
+    - git clean -xffd
+    - git lfs pull
+    - git submodule sync --recursive
+    - git submodule update -f --init --recursive
+    - git submodule foreach --recursive git reset --hard HEAD
+    - git submodule foreach --recursive git clean -xffd
+    - git submodule foreach --recursive git lfs pull
+  args:
+    chdir: "/var/jenkins/ws/commonrepo@1/repo"

@@ -1,0 +1,4 @@
+docker_package_version_string: "-{{ docker_version }}-3.el{{ ansible_distribution_major_version }}.{{ ansible_architecture }}"
+
+docker_installer_dependent_packages:
+  - "docker-scan-plugin-{{ docker_scan_plugin_version }}-3.el{{ ansible_distribution_major_version }}.{{ ansible_architecture }}"

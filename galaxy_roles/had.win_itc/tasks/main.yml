@@ -1,0 +1,13 @@
+- name: "Detect itc2 version"
+  win_shell: itc2 -v
+  register: itc2_version
+  ignore_errors: true
+  when: not win_itc2_force_install
+
+- name: "Pre-check"
+  debug:
+    msg: "ITC2 already installed. No need to run"
+  when: not win_itc2_force_install and ('CommandNotFoundException' not in itc2_version.stderr)
+
+- include_tasks: install.yml
+  when: win_itc2_force_install or ('CommandNotFoundException' in itc2_version.stderr)

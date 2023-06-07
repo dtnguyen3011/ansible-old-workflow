@@ -1,0 +1,26 @@
+---
+## this is the playbook for radar gen 5 template node, or win 10 node.
+## 1. refer the wiki page and in stall the tooling from IT service portal: https://inside-docupedia.bosch.com/confluence/display/CCD/Set+up+BIaaS+Win10+template+VM
+## 2. once you got the ism tool or temperory admin, you can first add systemuser de\raa9lr in groups and roles on the node as admin right,
+##    so that the ansible can have access to install and addenviroment path in the system.
+## 3. according to the ansible remote agent installation readme, please run the powershell script to enable the openssh access of this remote node
+## 4. add your agent name in the inventory list and you can run this playbook.
+## Lu Jia(XC-DA/EAS3)  
+- name: "install roles on nodes"
+  hosts: win_ssh_biaas_agent
+  vars:
+    install_sccm_script: "{{ lookup('file', 'BiaaS_template_setup/win10/scripts/install_sccm_updates.ps1') }}"
+  gather_facts: false
+  # strategy: free
+  pre_tasks:  
+    - name: "Important note"
+      debug:
+        msg: "Please MANUALLY install 'ASAP Toolset 15 SP4' in the custom path 'C:\Program Files\Vector\ASAP_TOOLSET_15_SP4' on any agent computer"
+
+  roles:
+    # INSTALLED BY IT SERVICES
+    - { role: had.win_git, tags: ["win_git","init"] }
+    # - { role: had.win_7z, tags: ["win_7z","init"] }
+    # - { role: had.win_notepad, tags: ["win_notepad","init"] }
+    # - { role: had.win_vs2015, tags: ["win_vs2015","init"] }
+    # - { role: had.win_tcc, tags: ["win_tcc","init"] }

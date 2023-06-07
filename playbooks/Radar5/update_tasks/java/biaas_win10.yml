@@ -1,0 +1,46 @@
+---
+####
+## this is the playbook for radar gen 5 BIAAS win10 template node
+####
+- name: "{{ ansible_hostname }} - STOP Jenkins Service"
+  win_service:
+    name: "{{ service_name }}"
+    state: stopped
+
+- include_role:
+    name: had.win_java
+
+- name: "{{ ansible_hostname }} - Update cacert"
+  win_copy:
+    src: update_tasks/files/cacerts
+    dest: "{{ win_java_install_dir }}\\lib\\security\\"
+
+- name: "{{ ansible_hostname }} - Remove old jdk from Window PATH environment"
+  win_path:
+    elements:
+      - 'C:\Program Files\RedHat\java-1.8.0-openjdk\missioncontrol\'
+      - 'C:\Program Files\RedHat\java-1.8.0-openjdk\webstart\'
+      - 'C:\Program Files\RedHat\java-1.8.0-openjdk\bin'
+      - 'C:\Program Files\RedHat\java-1.8.0-openjdk\jre\bin'
+    state: absent
+  ignore_errors: true
+
+- name: "{{ ansible_hostname }} - Remove old jdk environment variable"
+  win_environment:
+    name: "{{ item.name }}"
+    level: "{{ item.level }}"
+    state: absent
+  with_items:
+    - { name: "JAVA_HOME", level: machine }
+    - { name: "REDHAT_JAVA_HOME", level: machine }
+  ignore_errors: true
+
+- name: "{{ ansible_hostname }} - Restart"
+  win_reboot:
+    reboot_timeout: 600
+
+- name: "{{ ansible_hostname }} - Re-check Jenkins service"
+  win_shell: "Get-Service -Name '{{ service_name }}'"
+  register: result_jenkins
+- debug:
+    var: result_jenkins

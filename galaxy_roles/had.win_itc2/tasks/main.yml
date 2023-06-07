@@ -1,0 +1,35 @@
+- name: Create folder for installer download
+  win_file:
+    state: directory
+    path: "{{ tcc_install_dir }}/itc2"
+
+- name: Prepare installation in BCN
+  include_tasks: bcn.yml
+  when: not tcc_in_bdc
+
+- name: Prepare installation in BDC
+  include_tasks: cloud.yml
+  when: tcc_in_bdc
+
+- name: Install TCC using itc2 and add to path
+  win_command: "{{ tcc_install_dir }}\\itc2\\updateITC2.exe --force --register-path"
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{ tcc_user }}"
+    ansible_become_password: "{{ tcc_user_password }}"
+
+- name: Create folder base to void issue - Base Utils are not avaialable
+  win_file:
+    state: directory
+    path: "{{ tcc_install_dir }}/base"
+
+- name: Install tools from tool collection
+  win_command: "{{ tcc_install_dir }}\\itc2\\itc2.exe install {{ tcc_install_tool_collection }}"
+  when: tcc_install_tool_collection is defined
+
+- name: Add optional tcc tools to PATH
+  win_path:
+    elements: "{{ tcc_additional_path_tools }}"
+  when: tcc_additional_path_tools is defined

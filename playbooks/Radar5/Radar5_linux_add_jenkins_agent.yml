@@ -1,0 +1,34 @@
+---
+- name: Handle linux Jenkins nodes
+  hosts:
+    - linux_jenkins
+  vars:
+    jenkins_worker:
+      description: Connected and managed by ansible
+      executors: "{{ jenkins_executors }}"
+      labels: "{{ jenkins_labels }}"
+    jenkins_home: "/var/jenkins/{{ project_key | default( jenkins_master.url.split('/')[3] ) }}"
+
+  pre_tasks:
+    - name: Set jenkins home directory
+      set_fact:
+        jenkins_home: "/var/jenkins/{{ project_key | default( jenkins_master.url.split('/')[3] ) }}"
+      when: jenkins_home is not defined
+    - name: Set jenkins executors
+      set_fact:
+        jenkins_executors: 1
+      when: jenkins_executors is not defined
+    - name: Set jenkins labels
+      set_fact:
+        jenkins_labels: linux build_node {{ ansible_nodename.split('.')[0] }}
+      when: jenkins_labels is not defined
+    - name: Set jenkins name
+      set_fact:
+        ansible_nodename: "{{ jenkins_name }}"
+      when: jenkins_name is defined
+    - name: debug mode
+      debug:
+        msg: "jenkins_name - {{ ansible_nodename }} , jenkins_home - {{ jenkins_home }} with jenkins_executors - {{ jenkins_worker.executors }} and Label - {{ jenkins_worker.labels }}"
+
+  roles:
+    - { role: had.jenkins-master-add-worker, tags: ["jenkins-master-add-worker"] }

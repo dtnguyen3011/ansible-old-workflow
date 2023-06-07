@@ -1,0 +1,34 @@
+all:
+  children:
+    win:
+      children:
+        win_winrm: # machines using WinRM for connection
+          children:
+            win_winrm_jenkins_agent:
+              children:
+                win_winrm_jenkins_agent:
+
+        win_ssh: # machines using ssh for connection
+          children:
+            win_ssh_jenkins_agent:
+              children:
+              win_ssh_jenkins_agent:
+        win_jenkins:
+          children:
+            win_jenkins_agent: # combining both windows connection types in one windows group by referencing the previously defined groups
+              children:
+                win_winrm_jenkins_agent:
+                win_ssh_jenkins_agent:
+
+    linux:
+      children:
+        linux_jenkins:
+          children:
+            linux_jenkins_agent:
+
+    jenkins:
+      children:
+        jenkins_agent:
+          children:
+            win_jenkins_agent:
+            linux_jenkins_agent:

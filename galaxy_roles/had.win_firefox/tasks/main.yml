@@ -1,0 +1,25 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ var_firefox_temp_dir }}"
+
+- name: "Download firefox package"
+  win_get_url:
+    url: "{{ var_firefox_package_location }}"
+    dest: "{{ var_firefox_temp_dir }}\\firefox.exe"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Install firefox"
+  win_package:
+    path: "{{ var_firefox_temp_dir }}\\firefox.exe"
+    product_id: "{{ win_firefox_pid }}"
+    arguments:
+      - /S
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ var_firefox_temp_dir }}"

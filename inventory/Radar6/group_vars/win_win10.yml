@@ -1,0 +1,16 @@
+---
+# Many Windows machines do not work using the preferred WinRM (e.g Windows 10) because of restrictive CI rules
+# As a fallback you can setup openSSH on the Windows machine ans afterwards connect using SSH
+
+# ansible_user (and ansible_password) required for WinRM. Both are defined already elsewhere
+# without ansible_password set key-based authentication (default) will be used, which I was not able to get working on Windows (check the README)
+
+ansible_connection: ssh
+ansible_port: 22
+
+# using winrm installation from https://github.boschdevcloud.com/bios-doit/winrm-sccm/blob/master/src/Enable-WinRM.ps1
+# ansible_connection: winrm
+# ansible_winrm_transport: ntlm
+# ansible_winrm_server_cert_validation: ignore
+# #ansible_port: 5985 # http
+# ansible_port: 5986 # (default) https, seems not to work in some cases

@@ -1,0 +1,3 @@
+- name: template debug
+  debug:
+    msg: "template debug"

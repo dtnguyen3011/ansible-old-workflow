@@ -1,0 +1,6 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+canoe_version: "V11.0_SP3"
+canoe_msi_paths_prefix: "{{ canoe_temp_dir }}\\CANoe_{{ canoe_version }}_64bit\\Master_CANoe_64bit\\CANoe\\Files\\"
+drivers_installation_list: "VN7610 VN5610A dongle"

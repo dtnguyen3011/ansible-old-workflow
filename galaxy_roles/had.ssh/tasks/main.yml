@@ -1,0 +1,27 @@
+- name: Make sure .ssh directory exists and has proper permissions
+  file:
+    path: "/home/{{ nt_user }}/.ssh/"
+    state: directory
+    owner: "{{ nt_user }}"
+    group: "{{ nt_user }}"
+    mode: 0700
+  become: true
+
+- name: Append common ssh config to .ssh/config (file is created if it does not yet exist)
+  blockinfile:
+    dest: "/home/{{ nt_user }}/.ssh/config"
+    owner: "{{ nt_user }}"
+    group: "{{ nt_user }}"
+    mode: 0640
+    create: true
+    block: |
+      {{ lookup('template', 'templates/ssh_config.j2') }}
+  when: nt_user and nt_user != 'root'
+
+- name: Checking if SSH keys are set up correctly (.ssh/id_rsa), run 'ssh-keygen -t rsa -b 4096' or copy from previous installation
+  wait_for:
+    path: "/home/{{ nt_user }}/.ssh/id_rsa"
+    state: present
+  become: true
+  become_user: "{{ nt_user }}"
+  when: (ssh_testing is not defined) or (not ssh_testing)

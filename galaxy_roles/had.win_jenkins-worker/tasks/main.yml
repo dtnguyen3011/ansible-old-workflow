@@ -1,0 +1,139 @@
+- name: Setup temp folder for software download
+  win_file:
+    state: directory
+    path: C:\temp\jenkins_install\
+
+- name: Create jenkins program dir
+  win_file:
+    state: directory
+    path: "{{ win_jenkins_install_dir }}"
+
+- name: Get CSRF crumbs from jenkins to authenticate
+  no_log: true
+  win_uri:
+    url: "{{ jenkins_master.url }}/crumbIssuer/api/json"
+    method: GET
+    url_username: "{{ jenkins_master.api_user }}"
+    url_password: "{{ jenkins_master.api_key }}"
+    force_basic_auth: true
+    return_content: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    status_code:
+      - 200
+  register: CSRF_REST
+
+# Return form JENKINS contains not supported variation for json content_type
+# Force parse to json
+- name: Set variable for Jenkins crumb response
+  set_fact:
+    JENKINS_CRUMB_RESP: "{{ CSRF_REST.content | from_json }}"
+
+- name: Download base agent jar
+  win_get_url:
+    url: "{{ jenkins_master.url }}/jnlpJars/agent.jar"
+    dest: "{{ win_jenkins_install_dir }}\\agent.jar"
+
+- name: Download jnlp file to acquire node secret
+  no_log: true
+  win_get_url:
+    url: "{{ jenkins_master.url }}/computer/{{ jenkins_nodename }}/slave-agent.jnlp"
+    dest: C:\temp\jenkins_install\agent.jnlp
+    url_username: "{{ jenkins_master.api_user }}"
+    url_password: "{{ jenkins_master.api_key }}"
+    force_basic_auth: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    headers:
+      Jenkins-Crumb: "{{ JENKINS_CRUMB_RESP.crumb }}"
+
+- name: Scan jnlp file for node specific secret
+  no_log: true
+  win_shell: |
+    [xml]$data = Get-Content C:\temp\jenkins_install\agent.jnlp
+    $data.jnlp.'application-desc'.argument[0]
+  register: JNLP_SECRET
+
+- name: Fail if JNLP secret could not be acquired
+  fail:
+    msg: "Could not acquire JNLP secret file"
+  when: not JNLP_SECRET.stdout
+
+- name: Check if NSSM is available
+  no_log: true
+  win_shell: nssm
+  ignore_errors: true
+  register: NSSM_AVAIL
+
+- name: Create Jenkins Home directory
+  win_file:
+    state: directory
+    path: "{{ jenkins_home }}"
+
+- name: Update the folder ACLs for the jenkins service user (if defined)
+  win_acl:
+    path: "{{ jenkins_home }}"
+    user: "{{ win_jenkins_service.username }}"
+    type: allow
+    rights: FullControl
+  when: win_jenkins_service.username is defined
+
+- name: Debug message
+  debug:
+    msg: Cannot install service, NSSM is not available
+  when: NSSM_AVAIL.rc != 1
+
+- name: Remove service to handle password changes
+  win_service:
+    name: "{{ win_jenkins_service_name }}"
+    state: absent
+  when:
+    NSSM_AVAIL.rc == 1
+
+- name: Get java path
+  win_command: "where java"
+  ignore_errors: true
+  register: java_info
+  when: NSSM_AVAIL.rc == 1
+
+- name: Set variable for Java path
+  set_fact:
+    java_path: "{{ java_info.stdout_lines[0] }}"
+  when: NSSM_AVAIL.rc == 1 and java_info is defined
+
+- name: Install service via NSSM
+  no_log: true
+  win_nssm:
+    name: "{{ win_jenkins_service_name }}"
+    application: "{{ java_path }}"
+    app_parameters_free_form: "-Dfile.encoding=UTF8
+                               -jar {{ win_jenkins_install_dir }}\\agent.jar \
+                               -jnlpUrl {{ jenkins_master.url }}/computer/{{ jenkins_nodename }}/slave-agent.jnlp \
+                               -secret {{ JNLP_SECRET.stdout | trim }} \
+                               -workDir {{ jenkins_home }} \
+                               -noCertificateCheck"
+    start_mode: manual
+    state: present
+  when:
+    NSSM_AVAIL.rc == 1
+
+- name: Add runtime user to "Log on as a service" policiy
+  win_user_right:
+    name: SeServiceLogonRight
+    users:
+      - "{{ win_jenkins_service.username }}"
+    action: add
+
+- name: Add special runtime user to service
+  no_log: true
+  win_service:
+    name: "{{ win_jenkins_service_name }}"
+    username: "{{ win_jenkins_service.username | default(omit) }}"
+    password: "{{ win_jenkins_service.password | default(omit) }}"
+    start_mode: auto
+    state: restarted
+  when:
+    NSSM_AVAIL.rc == 1
+
+- name: Cleanup temp download folder
+  win_file:
+    state: absent
+    path: C:\temp\jenkins_install

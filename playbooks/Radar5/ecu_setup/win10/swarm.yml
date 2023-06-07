@@ -1,0 +1,39 @@
+---
+- name: "Copy swarm config file"
+  win_template:
+    src: home.txt.j2
+    dest: "{{ jenkins_home }}\\home.txt"
+
+- name: "Copy swarm bat file"
+  win_copy:
+    src: "{{ item }}"
+    dest: "{{ jenkins_home }}"
+  with_items:
+    - swarm-client-3.28.jar
+    - swarm.bat
+
+- name: "Create Task Schedule for Swarm"
+  win_scheduled_task:
+    name: Swarm Starter
+    description: "start swarm.bat in {{ jenkins_home }} on login - ANSIBLE"
+    author: "Cx Team"
+    actions:
+    - path: swarm.bat
+      working_directory: "{{ jenkins_home }}"
+    triggers:
+    - type: logon
+      user_id: "{{ sysuser.domain }}\\{{ sysuser.name }}"
+    username: "{{ sysuser.domain }}\\{{ sysuser.name }}"
+    compatibility: 4
+    state: present
+    enabled: yes
+    disallow_start_if_on_batteries: no
+    stop_if_going_on_batteries: no
+    restart_count: 3
+    restart_interval: PT1M
+    execution_time_limit: PT0S
+    start_when_available: yes
+
+- name: "Restart"
+  win_reboot:
+    reboot_timeout: 1200

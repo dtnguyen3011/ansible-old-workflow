@@ -1,0 +1,29 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ itc2_temp_dir }}"
+
+- name: "Download itc2 package"
+  win_get_url:
+    url: "{{ itc2_package_location }}"
+    dest: "{{ itc2_temp_dir }}\\itc.zip"
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack itc2"
+  win_unzip:
+    src: "{{ itc2_temp_dir }}\\itc.zip"
+    dest: "{{ win_itc2_install_dir }}"
+    creates: "{{ win_itc2_install_dir }}"
+
+- name: "Add itc2 to PATH"
+  win_path:
+    elements:
+      - "{{ win_itc2_install_dir }}"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ itc2_temp_dir }}"

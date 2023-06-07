@@ -1,0 +1,21 @@
+- name: Check if Containers are already installed as Windows Feature
+  win_shell: Get-WindowsOptionalFeature -Online -FeatureName Containers | Where State -CContains "Enabled"
+  register: check_feature_container_installed
+
+# Only install the feature, if not already installed
+# It isn´t installed, if Get-WindowsFeature Name FeatureName | Where Installed returns an empty response
+- name: Install Containers natively as Windows Feature (only, if not already installed)
+  win_shell: Enable-WindowsOptionalFeature -Online -FeatureName containers -All -NoRestart
+  when: not check_feature_container_installed.stdout
+  ignore_errors: true
+  notify: Reboot machine
+
+- name: Check if Hyper-V is already installed as Windows Feature
+  win_shell: Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V | Where State -CContains "Enabled"
+  register: check_feature_hyperv_installed
+
+- name: Install Hyper-V as Windows Feature (only, if not already installed)
+  win_shell: Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
+  when: not check_feature_hyperv_installed.stdout
+  ignore_errors: true
+  notify: Reboot machine

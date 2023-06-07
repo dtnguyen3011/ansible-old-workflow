@@ -1,0 +1,49 @@
+---
+- name: "Pre-check"
+  fail:
+    msg: "ERROR - jenkins_home is not defined"
+  when: jenkins_home is not defined
+
+- name: "Set variable for commonrepo folder in case only 1 executor or not defined"
+  set_fact:
+    commonrepo_origin_folder: "{{ jenkins_home }}\\ws\\commonrepo@1"
+
+- name: "Set variable for commonrepo folder for multiple executors"
+  set_fact:
+    commonrepo_origin_folder: "{{ jenkins_home }}\\ws\\commonrepo@X"
+    commonrepo_executor_folder: "{{ jenkins_home }}\\ws\\commonrepo@"
+  when: jenkins_executors is defined and jenkins_executors > 1
+
+- name: "Setup repo folder for repo checkout"
+  win_file:
+    state: directory
+    path: "{{ commonrepo_origin_folder }}"
+
+- name: "Initial clone commonrepo"
+  win_shell: "git lfs clone ssh://git@sourcecode01.de.bosch.com:7999/vwag_e3/commonrepo.git repo"
+  args:
+    chdir: "{{ commonrepo_origin_folder }}"
+  ignore_errors: True
+
+- name: "Initial checkout commonrepo"
+  win_shell: "{{ item }}"
+  with_items:
+    - git checkout
+    - git reset --hard
+    - git clean -xffd
+    - git lfs pull
+    - git submodule sync --recursive
+    - git submodule update -f --init --recursive
+    - git submodule foreach --recursive git reset --hard HEAD
+    - git submodule foreach --recursive git clean -xffd
+    - git submodule foreach --recursive git lfs pull
+  args:
+    chdir: "{{ commonrepo_origin_folder }}\\repo"
+
+- name: "Sync commonrepoX to executor folder"
+  win_robocopy:
+    src: "{{ commonrepo_origin_folder }}"
+    dest: "{{ commonrepo_executor_folder }}{{ item }}"
+    recurse: yes
+  with_sequence: count="{{ jenkins_executors }}"
+  when: jenkins_executors is defined and jenkins_executors > 1

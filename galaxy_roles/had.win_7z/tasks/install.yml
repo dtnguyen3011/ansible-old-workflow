@@ -1,0 +1,30 @@
+- name: "Setup temp folder for software download"
+  win_file:
+    state: directory
+    path: "{{ var_7z_temp_dir }}"
+
+- name: "Download 7z package"
+  win_get_url:
+    url: "{{ var_7z_package_location }}"
+    dest: "{{ var_7z_temp_dir }}\\7z.exe"
+  retries: 6
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Install 7z"
+  win_package:
+    path: "{{ var_7z_temp_dir }}\\7z.exe"
+    creates_path: "{{ win_7z_install_dir }}"
+    arguments:
+      - /S
+
+- name: "Add 7z to PATH"
+  win_path:
+    elements:
+      - "{{ win_7z_install_dir }}"
+
+- name: "Remove temp folder"
+  win_file:
+    state: absent
+    path: "{{ var_7z_temp_dir }}"

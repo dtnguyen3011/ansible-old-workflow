@@ -1,0 +1,4 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_firefox_pid: "Mozilla Firefox 84.0.2 (x64 de)"

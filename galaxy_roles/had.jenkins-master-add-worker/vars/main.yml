@@ -1,0 +1,35 @@
+json:
+  name: "{{ ansible_fqdn }}"
+  nodeDescription: "{{ jenkins_worker.description }}"
+  numExecutors: "{{ jenkins_worker.executors }}"
+  remoteFS: "{{ jenkins_home }}"
+  labelString: "{{ jenkins_worker.labels }}"
+  mode: "EXCLUSIVE"
+  launcher:
+    stapler-class: "hudson.plugins.sshslaves.SSHLauncher"
+    $class: "hudson.plugins.sshslaves.SSHLauncher"
+    host: "{{ ansible_fqdn }}"
+    credentialsId: "{{ jenkins_master.ssh_credentialsId }}"
+    sshHostKeyVerificationStrategy:
+      stapler-class: "hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"
+      $class: "hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"
+
+    port: "22"
+    javaPath: ""
+    jvmOptions: ""
+    prefixStartSlaveCmd: ""
+    suffixStartSlaveCmd: ""
+    launchTimeoutSeconds: "210"
+    maxNumRetries: "10"
+    retryWaitTime: "15"
+    tcpNoDelay: true
+    workDir: ""
+
+  retentionStrategy:
+    stapler-class: "hudson.slaves.RetentionStrategy$Always"
+    $class: "hudson.slaves.RetentionStrategy$Always"
+
+  nodeProperties:
+    stapler-class-bag: "true"
+
+  Jenkins-Crumb: "{{  JENKINS_CRUMB_RESP.json.crumb }}"

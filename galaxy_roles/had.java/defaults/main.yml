@@ -1,0 +1,4 @@
+java:
+  package:
+    debian: "openjdk-8-jre"
+    centos: "java-1.8.0-openjdk"

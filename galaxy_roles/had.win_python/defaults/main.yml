@@ -1,0 +1,4 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_python_install_dir: C:\Python27

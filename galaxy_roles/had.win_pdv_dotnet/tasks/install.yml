@@ -1,0 +1,33 @@
+- name: "Setup temp folder for pdv_dotnet setup files"
+  win_file:
+    state: directory
+    path: "{{ win_pdv_dotnet_temp_dir }}"
+
+- name: "Create pdv_dotnet Program directory"
+  win_file:
+    state: directory
+    path: "{{ win_pdv_dotnet_install_dir }}"
+
+- name: "Download pdv_dotnet install file"
+  win_get_url:
+    url: "{{ item.location }}/{{ item.src }}"
+    dest: "{{ win_pdv_dotnet_temp_dir }}\\{{ item.src }}"
+  retries: 2
+  delay: 2
+  register: result
+  until: result is succeeded
+  with_items:
+    - { location: "{{ win_pdv_dotnet_package_location }}", src: "{{ win_pdv_dotnet_package_file }}" }
+    - { location: "{{ win_pdv_desktop_package_location }}", src: "{{ win_pdv_desktop_package_file }}" }
+
+- name: "Install pdv_dotnet"
+  win_command: "{{ win_pdv_dotnet_temp_dir }}\\{{ item.src }} /install /quiet /norestart"
+  with_items:
+    - { src: "{{ win_pdv_dotnet_package_file }}" }
+    - { src: "{{ win_pdv_desktop_package_file }}" }
+  ignore_errors: true
+
+- name: "Cleanup temp download folder"
+  win_file:
+    state: absent
+    path: "{{ win_pdv_dotnet_temp_dir }}"

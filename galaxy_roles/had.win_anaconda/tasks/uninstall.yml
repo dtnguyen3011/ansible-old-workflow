@@ -1,0 +1,21 @@
+# This uninstall yml is needed because win_package with state=absent for some reason does not remove the package
+#
+
+- name: "Get current uninstall string"
+  win_reg_stat:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Anaconda3 {{ item.anaconda_vers }} (Python {{ item.python_vers }} 64-bit)
+    name: UninstallString
+  register: anaconda_uninstall_string
+
+- name: "Copy uninstaller to temp location"
+  win_copy:
+    remote_src: true
+    src: "{{ anaconda_uninstall_string.value | regex_replace('\"', '') }}"
+    dest: "{{ anaconda_temp_dir }}\\Un_A.exe"
+  when: anaconda_uninstall_string.exists
+
+- name: "Uninstall Anaconda3 {{ item.anaconda_vers }}"
+  win_shell: "start /wait {{ anaconda_temp_dir }}\\Un_A.exe /S _?={{ win_anaconda_install_dir }}\\{{ win_anaconda_version }}"
+  args:
+    executable: cmd
+  when: anaconda_uninstall_string.exists

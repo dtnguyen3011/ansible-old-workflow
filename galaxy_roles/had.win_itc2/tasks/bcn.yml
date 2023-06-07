@@ -1,0 +1,29 @@
+- name: Download itc2 installer in BCN
+  win_copy:
+    src: "{{ tcc_installer_location_bcn }}\\updateITC2.exe"
+    dest: "{{ tcc_install_dir }}\\itc2\\updateITC2.exe"
+    remote_src: true
+    force: true
+  become: true
+  become_method: runas
+  become_flags: logon_type=new_credentials logon_flags=netcredentials_only
+  vars:
+    ansible_become_user: "{{ tcc_user }}"
+    ansible_become_password: "{{ tcc_user_password }}"
+  retries: 2
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: Check if ISM is installed
+  win_stat:
+    # checking if some path in the ism install location is present
+    path: C:\ism\installer\local
+  register: stat_ism
+
+- name: Add itc2 config to improve performance without ISM
+  template:
+    src: userConfig_noIsm.json.j2
+    dest: "{{ tcc_install_dir }}\\itc2\\userConfig.json"
+    force: true
+  when: not stat_ism.stat.exists

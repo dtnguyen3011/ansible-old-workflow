@@ -1,0 +1,18 @@
+---
+# create an vault secret with which you use to de-/encrypt your vault  (e.g. ~/.vault-id-PROJECT)
+#
+# vault commands:
+#   - encrypt: ansible-vault encrypt inventory/group_vars/PROJECT/vault.yml --vault-id ~/.vault-id-PROJECT
+#   - decrypt: ansible-vault decrypt inventory/group_vars/PROJECT/vault.yml --vault-id ~/.vault-id-PROJECT
+
+vault:
+  USERNAME_HERE:
+    pass: Sup3r$3cr3tP4$$w0rd
+    jenkins_api_key: an_awesome_secret
+    ssh_key: -----BEGIN RSA PRIVATE KEY-----
+      qH+vo1BBwm9Hw5+ptgvPwzJiEGDu5lF1iXSTVqY2KnSNOx078NUl5dHLIKr8CeGQ
+      koMwdcH1EuQrFl8GGt+ua4MeLCPOR2+oFaWOepbmvBsuwnFqUjZ5c/7M8llPFOJi
+      9w3xJBFqvb+z30pR457ZsAF9aeOKS4NJEMtAqoGrLekc5/h/b3/Jbi0fAQNQRht7
+      ................. HERE WOULD GO MORE LINES .....................
+      ...........................much more............................
+      -----END RSA PRIVATE KEY-----

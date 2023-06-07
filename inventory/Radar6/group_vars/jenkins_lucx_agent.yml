@@ -1,0 +1,10 @@
+---
+jenkins_worker:
+  description: "Connected and managed by ansible"
+  executors: 4
+  labels: "lucx_agent linux"
+
+jenkins_win_worker:
+  description: "Connected and managed by ansible"
+  executors: 4
+  labels: "lucx_agent windows"

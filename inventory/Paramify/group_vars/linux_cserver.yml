@@ -1,0 +1,9 @@
+ansible_user: rbadmin_app2
+jenkins_user: rbadmin_app2
+
+jenkins_master:
+  url: "https://rb-jmaas.de.bosch.com/XC_DA_ParameterHandling"
+  api_user: "{{ sysuser.name }}"
+  api_key: "{{ sysuser.jenkins_api_key }}"
+  ssh_credentialsId: jenkins_agent_cserver_ssh_key
+  update_config: true

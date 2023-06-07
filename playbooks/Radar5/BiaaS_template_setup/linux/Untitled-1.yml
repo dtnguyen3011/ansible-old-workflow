@@ -1,0 +1,42 @@
+---
+- name: Check Git version
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Check Git version on Linux
+      when: ansible_os_family == 'Linux'
+      command: git --version
+      register: git_version_linux
+
+    - name: Check Git version on Windows
+      when: ansible_os_family == 'Windows'
+      win_command: git --version
+      register: git_version_windows
+
+    - name: Print Git version on Linux
+      when: git_version_linux is defined
+      debug:
+        msg: "Git version on Linux: {{ git_version_linux.stdout }}"
+
+    - name: Print Git version on Windows
+      when: git_version_windows is defined
+      debug:
+        msg: "Git version on Windows: {{ git_version_windows.stdout }}"
+
+
+
+
+---
+- name: Check Git version on Windows
+  hosts: linux_jenkins
+  gather_facts: false
+
+  tasks:
+    - name: Check Git version
+      command: git --version
+      register: git_version
+
+    - name: Print Git version
+      debug:
+        msg: "{{ git_version.stdout }}"

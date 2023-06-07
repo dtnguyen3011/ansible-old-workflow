@@ -1,0 +1,17 @@
+- name: "Pre-check Visual Studio Professional 2019"
+  win_shell: Get-ItemProperty 'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' | Where-Object {$_.DisplayName -eq "Visual Studio Professional 2019"} | Select-Object -ExpandProperty ModifyPath
+  register: modify_cmd
+  ignore_errors: true
+
+- name: "Pre-check"
+  debug:
+    msg: "VS2019 already installed. No need to run"
+  when: not win_vs2019_force_install and (win_vs2019_update_params | length == 0) and (modify_cmd.stdout | length > 0)
+
+- name: "UPDATE Visual Studio Professional 2019"
+  win_command: "{{ modify_cmd.stdout_lines[0] }} --quiet --norestart {{ win_vs2019_update_params }} --downloadThenInstall"
+  when: not win_vs2019_force_install and (win_vs2019_update_params | length > 0) and (modify_cmd.stdout | length > 0)
+
+- name: "INSTALL Visual Studio Professional 2019"
+  include_tasks: install.yml
+  when: win_vs2019_force_install or (modify_cmd.stdout | length == 0)

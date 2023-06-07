@@ -1,0 +1,4 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+tcc_install_dir: C:\TOOLS\T32_Gen5

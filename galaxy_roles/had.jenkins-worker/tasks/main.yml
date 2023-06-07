@@ -1,0 +1,59 @@
+- name: Fail if public key is undefined
+  fail:
+    msg: "jenkins_public_key is not defined"
+  when: jenkins_public_key is not defined
+
+# Prepare a docker group
+- name: "Docker Group"
+  group:
+    name: docker
+    state: present
+  become: true
+
+# Jenkins user for incoming SSH connection by the Jenkins Master
+- name: "Create Jenkins user"
+  user:
+    name: "jenkins"
+    createhome: true
+    groups:
+      - docker # give access to docker daemon
+    shell: "{{ jenkins_user_shell }}"
+    home: "{{ jenkins_home | default(omit) }}"
+    uid: "{{ jenkins_uid | default(omit) }}"
+  become: true
+
+# OSD based hosts require to add users to allowed ssh users list
+# See: https://inside-docupedia.bosch.com/confluence/x/I50DPg
+- name: Check for OSD service ssh users management
+  stat: path=/opt/osd/osd-ssh-package/osd-ssh-verify-ad.sh
+  register: osd_ssh_user_management
+
+- name: Add Jenkins user to OSD allowed ssh users file
+  lineinfile:
+    dest: /etc/opt/osd-ssh-package/allowed_users
+    regexp: "^jenkins$"
+    line: "jenkins"
+  become: true
+  when: osd_ssh_user_management.stat.exists
+
+- name: "Install dependencies"
+  package:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items: "{{ package_dependencies }}"
+
+# Add jenkins ssh key
+- debug:
+    msg: "Jenkins Public Key: {{ jenkins_public_key }}"
+
+- name: "Authorize Jenkins SSH key"
+  become: true
+  authorized_key:
+    user: "jenkins"
+    key: "{{ jenkins_public_key }}"
+    state: present
+  notify: "restart ssh-service"
+
+# Make sure sshd is restarted.
+- meta: flush_handlers

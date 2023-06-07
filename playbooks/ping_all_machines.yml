@@ -1,0 +1,16 @@
+---
+- name: "Ping WINDOWS nodes"
+  hosts: win
+  gather_facts: false
+
+  tasks:
+    - name: Ping Windows
+      ansible.builtin.win_ping:
+
+- name: "Ping LINUX nodes"
+  hosts: linux
+  gather_facts: false
+
+  tasks:
+    - name: Ping Linux
+      ansible.builtin.ping:

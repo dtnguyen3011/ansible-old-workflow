@@ -1,0 +1,47 @@
+---
+- name: "UnMount if exists"
+  mount:
+    path: "{{ item.path }}"
+    state: absent
+  become: yes
+  with_items:
+    - { path: "/media/data/pjsym_results" }
+    - { path: "/var/ccache" }
+
+- name: "Create directory"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ sysuser.name }}"
+  become: yes
+  with_items:
+    - /media/data/pjsym_results
+    - /var/ccache
+
+- name: "Create SMB Credential file"
+  copy:
+    dest: /root/.smbcredentials
+    content: |
+      username={{ sysuser.name }}
+      password={{ sysuser.pass }}
+      domain={{ sysuser.domain }}
+  become: yes
+
+- name: "Install cifs-utils"
+  apt:
+    name: cifs-utils
+    state: present
+  become: yes
+
+- name: "Mount"
+  mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: "{{ item.fstype }}"
+    opts: "{{ item.opts }}"
+    state: mounted
+  become: yes
+  with_items:
+    - { path: "/media/data/pjsym_results", src: "//dfs.abt-soc15.storage.de.bosch.com/CC_ad_radar5_ci/ci_artifacts", fstype: "cifs", opts: "rw,uid=946965253,gid=1635200513,credentials=/root/.smbcredentials,vers=2.0" }
+    - { path: "/var/ccache", src: "//dfs.abt-soc15.storage.de.bosch.com/CC_ad_radar5_ci/ccache/linux", fstype: "cifs", opts: "rw,uid=946965253,gid=1635200513,mfsymlinks,credentials=/root/.smbcredentials,vers=3.0" }

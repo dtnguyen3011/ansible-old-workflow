@@ -1,0 +1,23 @@
+---
+sysuser_rac:
+  name: "{{ vault.sysuser_rac.name }}"
+  domain: "{{ vault.sysuser_rac.domain }}"
+  pass: "{{ vault.sysuser_rac.pass }}"
+
+sysuser:
+  name: "{{ vault.sysuser_rac.name }}"
+  domain: "{{ vault.sysuser_rac.domain }}"
+  pass: "{{ vault.sysuser_rac.pass }}"
+  jenkins_api_key: "{{ vault.sysuser_rac.jenkins_api_key }}"
+  jenkins_jet_api_key: "{{ vault.sysuser_rac.jenkins_jet_api_key }}"
+  jenkins_dev_api_key: "{{ vault.sysuser_rac.jenkins_dev_api_key }}"
+  ssh_pub_key: "{{ vault.sysuser_rac.ssh_pub_key }}"
+  ssh_key: "{{ vault.sysuser_rac.ssh_key }}"
+  full_name: "Radar Gen5 Cx (XC-DX/EAS)"
+  email: "Cx.RadarGen5@de.bosch.com"
+
+git_user: "{{ sysuser.name }}"
+git_ssh_key: "{{ sysuser.ssh_key }}"
+git_ssh_pub_key: "{{ sysuser.ssh_pub_key }}"
+git_user_full_name: "{{ sysuser.full_name }}"
+git_user_email: "{{ sysuser.email }}"

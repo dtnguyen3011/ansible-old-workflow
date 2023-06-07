@@ -1,0 +1,3 @@
+var_git_temp_dir: C:\temp\win_git_install
+var_git_package_location: http://abtv55162.de.bosch.com:8084/doit-mirror/GitForWindows
+var_user_home_dir: "C:\\Users\\{{ win_git_user.username }}"

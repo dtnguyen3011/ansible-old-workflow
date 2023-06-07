@@ -1,0 +1,3 @@
+artifactory_user: "{{ jenkins_user }}"
+artifactory_user_password: "{{ jenkins_user_password }}"
+artifactory_path: "rb-artifactory.bosch.com/artifactory/list/ccad-hive-environment-maintenance-release-local/jenkins-workers/software/repository/os"

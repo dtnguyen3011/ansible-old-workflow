@@ -1,0 +1,24 @@
+- name: "Create Telegraf directory"
+  win_file:
+    state: directory
+    path: "{{ win_telegraf_dir }}"
+
+- name: "Download exe file"
+  win_get_url:
+    url: "{{ win_telegraf_package_location }}{{ win_telegraf_package_version }}/telegraf.exe"
+    dest: "{{ win_telegraf_dir }}"
+  retries: 2
+  delay: 2
+  register: result
+  until: result is succeeded
+
+- name: "Copy config file"
+  win_template:
+    src: telegraf.j2.conf
+    dest: "{{ win_telegraf_dir }}\\telegraf.conf"
+
+- name: "Add to service"
+  win_shell: "{{ win_telegraf_dir }}\\telegraf.exe --config {{ win_telegraf_dir }}\\telegraf.conf --service-name {{ win_telegraf_service_name }} --service install"
+
+- name: "Start service"
+  win_shell: "net start telegraf"

@@ -1,0 +1,4 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+hawcc_install_dir: C:\TCC\hawcc\2.9.7082.17600_beta4_WIN64

@@ -1,0 +1,48 @@
+- name: Install CNTLM
+  apt:
+    name: "cntlm"
+    state: "present"
+  become: true
+
+- name: Prompt for NT user password
+  expect:
+    command: "cntlm -u {{ nt_user|upper }} -d {{ domain|upper }} -H"
+    responses:
+      (?i)Password: "{{ nt_user_pw }}"
+  no_log: true
+  register: cntlm_output
+
+- name: Set cntlm credentials
+  set_fact:
+    cntlm_username: "{{ nt_user|upper }}"
+    cntlm_domain: "{{ domain|upper }}"
+    cntlm_passntlmv2: "{{ cntlm_output.stdout_lines[3] | regex_search('([a-fA-F0-9]{32})') }}"
+  no_log: true
+
+- name: Set cntlm no_proxy and listen_addresses
+  set_fact:
+    cntlm_noproxy: "{{ cntlm_noproxy }}, {{ cntlm_docker_noproxy }}"
+    cntlm_listen_addresses: "{{ cntlm_listen_addresses }} + {{ cntlm_docker_listen }}"
+
+- name: add proxy env params to /etc/environment
+  lineinfile:
+    dest: /etc/environment
+    line: "{{ item }}"
+  with_items:
+    - "http_proxy=http://127.0.0.1:3128/"
+    - "https_proxy=http://127.0.0.1:3128/"
+    - "ftp_proxy=http://127.0.0.1:3128/"
+    - "all_proxy=socks://127.0.0.1:3128/"
+    - "socks_proxy=socks://127.0.0.1:3128/"
+    - "no_proxy={{ cntlm_noproxy }}"
+  become: true
+
+- name: Set cntlm configuration
+  become: true
+  template:
+    src: cntlm.j2.conf
+    dest: /etc/cntlm.conf
+    mode: 0600
+    owner: root
+    group: root
+  notify: restart cntlm

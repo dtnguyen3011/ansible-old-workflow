@@ -1,0 +1,13 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+tcc_install_dir: C:\TCC
+tcc_in_bdc: false
+tcc_install_tool_collection: None
+tcc_user: "{{ ansible_user }}"
+tcc_user_password: "{{ ansible_password }}"
+
+tcc_installer_location_bcn: \\abtvdfs2.de.bosch.com\ismdfs\ism\ito\TCC\itc2
+tcc_artifactory_api_key: "{{ artifactory_api_key | default('not_needed_for_ism_machines') }}"
+
+tcc_installer_location_cloud: https://artifactory.boschdevcloud.com/ui/native/lab000142-tcc-tools-local/itc2

@@ -1,0 +1,7 @@
+---
+ansible_connection: ssh
+ansible_port: 22
+
+ansible_user: rbadmin_app1
+ansible_ssh_private_key_file: "{{ sysuser.ssh_dir }}/jenkinsAgent_rsa"
+ansible_become_pass: "{{ sysuser.pass }}"

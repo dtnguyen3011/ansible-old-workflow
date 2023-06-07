@@ -1,0 +1,36 @@
+---
+- name: Install basic Tools
+  hosts: win_win10_jenkins_hw_testbench_bsw
+  gather_facts: false
+  roles:
+    - { role: had.win_7z, tags: ["win_7z", "init"] }
+    - { role: had.win_git, tags: ["win_git", "init"] }
+    - { role: had.win_itc2, tags: ["win_itc2", "init"] }
+
+
+- name: Install BSW tools
+  hosts: win_win10_jenkins_hw_testbench_bsw
+  gather_facts: false
+  roles:
+    #- { role: had.win_canoe, tags: ["win_canoe"] }
+
+
+
+
+- name: Connect BSW Testbench to jenkins
+  hosts: win_win10_jenkins_hw_testbench_bsw
+  vars:
+    jenkins_win_worker:
+      description: BSW HW-Testbench -- Connected and managed by ansible
+      executors: 1
+      labels: windows bsw_testbench canoe docker
+  pre_tasks:
+    - name: Get largest volume on machine
+      win_shell: (Get-Volume | Sort-Object "Size" -Descending | Select-object -First 1).DriveLetter
+      register: volume
+      changed_when: false
+    - name: Set jenkins home directory
+      set_fact:
+        jenkins_home: "{{ volume.stdout | trim }}:\\j\\{{ project_key | default( jenkins_master.url.split('/')[3] ) }}"
+  roles:
+    - { role: had.win_jenkins-worker, tags: ["win_jenkins-worker"] }

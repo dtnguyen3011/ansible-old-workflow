@@ -1,0 +1,73 @@
+---
+####
+## this is the playbook for radar gen 5 window server nodes
+####
+- debug: var=jenkins_env
+- name: "{{ ansible_hostname }} - Define vars based on jenkins_env"
+  set_fact:
+    jenkins_env_list: "{{ jenkins_env_list | default([]) + [item] }}"
+  loop:
+    - { 'Name': 'Jenkins',      'Jhome': "{{ jenkins_home }}",      'JInfo': "{{ jenkins_master }}", 'JStatus': "{{ main_status | default('on') }}" }
+    - { 'Name': 'Jenkins_JET',  'Jhome': "{{ jenkins_home }}_JET",  'JInfo': "{{ jenkins_jet }}", 'JStatus': "{{ jet_status | default('on') }}" }
+    - { 'Name': 'Jenkins_DEV',  'Jhome': "{{ jenkins_home }}_DEV",  'JInfo': "{{ jenkins_dev }}", 'JStatus': "{{ dev_status | default('on') }}" }
+  when: >-
+    (item.Name == "Jenkins" and "main" in jenkins_env) or
+    (item.Name == "Jenkins_JET" and "jet" in jenkins_env) or
+    (item.Name == "Jenkins_DEV" and "dev" in jenkins_env)
+
+- name: "{{ ansible_hostname }} - STOP node on Jenkins"
+  no_log: true
+  win_uri:
+    url: "{{ item.JInfo.url }}/computer/{{ ansible_nodename }}/changeOfflineCause?offlineMessage=ansible_upgrade_jdk_11"
+    method: POST
+    url_username: "{{ item.JInfo.api_user }}"
+    url_password: "{{ item.JInfo.api_key }}"
+    force_basic_auth: true
+    return_content: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    status_code:
+      - 302
+  with_items:
+    - "{{ jenkins_env_list }}"
+  when: item.JStatus != 'off'
+
+- name: "{{ ansible_hostname }} - RUNNING on roles"
+  include_role:
+    name: had.win_jenkins-worker
+  loop: "{{ jenkins_env_list }}"
+  loop_control:
+    index_var: list_index
+  vars:
+    win_jenkins_service_name: "{{ item.Name }}_JNLP_worker"
+    win_jenkins_install_dir: "C:\\\\tools\\\\{{ item.Name }}_JNLP_worker"
+    jenkins_master: "{{ item.JInfo }}"
+    jenkins_home: "{{ item.Jhome }}"
+    win_java_force_install: "{% if list_index == 0 %}true{% else %}false{% endif %}"
+
+- name: "{{ ansible_hostname }} - Restart"
+  win_reboot:
+    reboot_timeout: 1200
+
+- name: "{{ ansible_hostname }} - Re-check Jenkins service"
+  win_shell: "Get-Service -Name '{{ item.Name }}_JNLP_worker'"
+  with_items:
+    - "{{ jenkins_env_list }}"
+  register: result_jenkins
+- debug:
+    var: result_jenkins
+
+- name: "{{ ansible_hostname }} - START node on Jenkins"
+  no_log: true
+  win_uri:
+    url: "{{ item.JInfo.url }}/computer/{{ ansible_nodename }}/toggleOffline?offlineMessage=ansible_upgrade_jdk_11"
+    method: POST
+    url_username: "{{ item.JInfo.api_user }}"
+    url_password: "{{ item.JInfo.api_key }}"
+    force_basic_auth: true
+    return_content: true
+    validate_certs: false # Certs form Bosch-CA not stable
+    status_code:
+      - 302
+  with_items:
+    - "{{ jenkins_env_list }}"
+  when: item.JStatus != 'off'

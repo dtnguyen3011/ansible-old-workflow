@@ -1,0 +1,21 @@
+---
+- name: "Download python3 for mt_update"
+  win_get_url:
+    url: "http://abtv55162.de.bosch.com:8084/doit-mirror/Python/Python3_gen5_mtupdate.zip"
+    dest: "C:\\Python3.zip"
+  retries: 2
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: "Unpack python3"
+  win_unzip:
+    src: "C:\\Python3.zip"
+    dest: "C:\\"
+    delete_archive: yes
+
+- name: "Add Python3 to PATH"
+  win_path:
+    elements:
+      - 'C:\Python3'          # Use for MT update
+      - 'C:\Python3\Scripts'  # Use for MT update

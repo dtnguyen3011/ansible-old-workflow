@@ -1,0 +1,44 @@
+---
+- name: "Handle WINDOWS Jenkins nodes"
+  hosts: win_server_jnks
+  gather_facts: false
+
+  pre_tasks:
+  - name: "Get largest volume on machine"
+        win_shell: (Get-Volume | Sort-Object "Size" -Descending | Select-object -First 1).DriveLetter
+        register: volume
+  - name: "Set jenkins home directory"
+    set_fact:
+      jenkins_home: "{{ volume.stdout | trim }}:\\j\\ws"
+
+  roles:
+    - { role: win_7z, tags: ["win_7z","init"] }
+    # - { role: win_anaconda, tags: ["win_anaconda", "init", "base"] }
+    # - { role: win_git, tags: ["win_git","init"] }
+    - { role: win_java, tags: ["win_java","init"] }
+    - { role: win_python, tags: ["win_python","init"] }
+    - { role: win_tcc, tags: ["win_tcc","init"] }
+    - { role: win_jenkins-master-add-node, tags: ["win_jenkins-master-add-node", "init", "update_on_master"] } # This is important. Call add-node before deploy node
+    - { role: win_jenkins-worker, tags: ["win_jenkins-worker" ] }
+
+  post_tasks:
+    - name: "Initial clone"
+      win_shell: "git clone ssh://git@sourcecode01.de.bosch.com:7999/PROJECT/REPO.git {{ jenkins_home }}\\0"
+      ignore_errors: True
+
+    - name: "Initial checkout"
+      win_shell: "{{ item }}"
+      with_items:
+        - git checkout
+        - git lfs pull
+      args:
+        chdir: "{{ jenkins_home }}\\0"
+
+    - name: "Copy node directory for all others"
+      win_copy:
+        remote_src: true
+        src: "{{ jenkins_home }}\\0\\"
+        dest: "{{ item }}\\"
+        force: false
+      with_sequence: start=1 end={{ ansible_executor_count - 1 if ansible_executor_count > 1 else 1 }} format={{ jenkins_home }}\\%x
+      when: ansible_executor_count > 1

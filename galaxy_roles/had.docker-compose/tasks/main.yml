@@ -1,0 +1,6 @@
+- name: Download docker-compose
+  get_url:
+    url: "http://abtv55162.de.bosch.com:8084/doit-mirror/docker-compose/{{ compose_version }}/docker-compose-Linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    mode: 'u+x,g+x,o+x'
+  become: true

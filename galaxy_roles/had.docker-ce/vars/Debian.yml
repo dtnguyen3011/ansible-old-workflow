@@ -1,0 +1,3 @@
+docker_package_version_string: "_{{ docker_version }}~3-0~{{ ansible_lsb.id | lower }}-{{ ansible_lsb.codename }}_amd64"
+
+docker_installer_dependent_packages: []

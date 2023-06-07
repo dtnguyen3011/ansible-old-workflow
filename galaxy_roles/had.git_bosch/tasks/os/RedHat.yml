@@ -1,0 +1,10 @@
+- name: Install git packages
+  become: true
+  no_log: true
+  yum:
+    name:
+      - "http://abtv55162.de.bosch.com:8084/doit-mirror/git/redhat/git-2.25.0-1.el7.x86_64.rpm"
+      - "http://abtv55162.de.bosch.com:8084/doit-mirror/git/redhat/git-lfs-2.5.2-1.el7.x86_64.rpm"
+      - "http://abtv55162.de.bosch.com:8084/doit-mirror/git/redhat/perl-Git-2.25.0-1.el7.x86_64.rpm"
+    state: present
+    update_cache: true

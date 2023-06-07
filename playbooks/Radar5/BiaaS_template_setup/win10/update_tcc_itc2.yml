@@ -1,0 +1,14 @@
+---
+- name: "Update and install via ITC2"
+  win_command: "{{ item }}"
+  with_items:
+    - itc2 install RadarGen5CI:3.3.3
+    - itc2 install ACA:0.4
+    - itc2 install Selena:DevLatest
+    - itc2 self-update
+
+- name: "Install coverity 2020.09"
+  win_shell: "_install_TCC_coverity.bat 7"
+  args:
+    chdir: "C:\\JT\\ws\\commonrepo@1\\repo\\cust\\common\\tools\\sca_tools_package\\scripts\\tcc"
+    executable: cmd.exe

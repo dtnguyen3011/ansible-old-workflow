@@ -1,0 +1,15 @@
+- name: restart ssh-service
+  become: true
+  service:
+    name: "{{ ssh_service }}"
+    state: restarted
+
+- name: wait for ssh-service
+  wait_for: >
+    host="{{ ansible_ssh_host }}"
+    port={{ ansible_port }}
+    delay=15
+    timeout=60
+  delegate_to: localhost
+  listen: "restart ssh-service"
+  when: ansible_ssh_host is defined and ansible_port is defined

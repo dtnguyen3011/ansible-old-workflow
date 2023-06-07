@@ -1,0 +1,6 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_vs2019_install_dir: C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional
+win_vs2019_update_params: ""
+win_vs2019_force_install: false

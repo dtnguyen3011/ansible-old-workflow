@@ -1,0 +1,12 @@
+# Place all default values for variables here.
+# If a variable was not defined prior (e.g. in a playbook), then this default value is used.
+
+win_git_update: false
+win_git_version: "Git-2.20.1-64-bit.exe"
+win_git_cmd_dir: "C:\\Program Files\\Git\\cmd"
+
+win_git_lfs_install: false
+
+win_git_add_private_key: false
+win_git_user_fullname: ""
+win_git_user_email: ""

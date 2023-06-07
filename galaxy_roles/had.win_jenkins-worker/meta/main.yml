@@ -1,0 +1,7 @@
+dependencies:
+  - role: had.win_java
+    src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_java
+  - role: had.win_nssm
+    src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_nssm.git
+  - role: had.win_jenkins-master-add-node
+    src: git+ssh://git@sourcecode01.de.bosch.com:7999/ansible/had.win_jenkins-master-add-node
